@@ -19,8 +19,11 @@ const Home = () => {
       <ExclusiveDeals />
       <PopularCategories />
       <PopularRestaurants />
+      <div className="mx-auto max-w-6xl space-y-6 p-6">
+
       <DownloadBanner />
       <GetStarted />
+      </div>
       <AboutUs />
       <Footer />
     </div>
