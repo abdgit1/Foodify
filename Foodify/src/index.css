@@ -1,0 +1,59 @@
+@import "tailwindcss";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme {
+  /* Colors — pulled from Figma design */
+  --color-brand-orange: #fc8a06;
+  --color-brand-dark: #03081f;
+  --color-brand-black: #000000;
+  --color-brand-white: #ffffff;
+  --color-brand-gray: #d9d9d9;
+  --color-brand-offwhite: #fafafa;
+  --color-brand-green: #028643;
+
+  /* Fonts */
+  --font-heading: "Poppins", sans-serif;
+  --font-body: "Poppins", sans-serif;
+  --font-nav: "Manrope", sans-serif;
+
+  /* Radii used throughout (cards, pills, buttons) */
+  --radius-card: 12px;
+  --radius-pill: 120px;
+}
+
+@layer base {
+  body {
+    font-family: var(--font-body);
+    color: var(--color-brand-dark);
+    background-color: var(--color-brand-white);
+    transition: background-color 0.2s ease, color 0.2s ease;
+  }
+
+
+
+  h1, h2, h3, h4 {
+    font-family: var(--font-heading);
+    font-weight: 700;
+  }
+}
+
+@layer utilities {
+  .btn-primary {
+    background-color: var(--color-brand-orange);
+    color: white;
+    border-radius: var(--radius-pill);
+    padding: 0.5rem 1.5rem;
+    font-weight: 600;
+    transition: background-color 0.2s ease;
+  }
+
+  .btn-primary:hover {
+    background-color: #e07a00;
+  }
+
+  .card {
+    border-radius: var(--radius-card);
+    overflow: hidden;
+  }
+}

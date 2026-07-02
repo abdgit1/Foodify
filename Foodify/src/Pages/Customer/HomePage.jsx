@@ -1,0 +1,30 @@
+import React from 'react'
+
+import Navbar from '../../Components/CommonComponents/Navbar';
+import Footer from '../../Components/CommonComponents/Footer';
+
+import HeroBanner from '../../Components/HomeComponents/HeroBanner';
+import PopularCategories from '../../Components/HomeComponents/PopularCategories';
+import PopularRestaurants from '../../Components/HomeComponents/PopularRestaurants';
+import ExclusiveDeals from '../../Components/HomeComponents/ExclusiveDeals';
+import DownloadBanner from '../../Components/HomeComponents/DownloadBanner';
+import AboutUs from '../../Components/HomeComponents/AboutUs';
+import GetStarted from '../../Components/HomeComponents/GetStarted';
+
+const Home = () => {
+  return (
+    <div>
+      <Navbar />
+      <HeroBanner />
+      <ExclusiveDeals />
+      <PopularCategories />
+      <PopularRestaurants />
+      <DownloadBanner />
+      <GetStarted />
+      <AboutUs />
+      <Footer />
+    </div>
+  );
+};
+
+export default Home;
