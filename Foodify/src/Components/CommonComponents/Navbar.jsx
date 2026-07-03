@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { act, useState } from 'react';
 import { Link } from 'react-router-dom';
 import logo from "../../assets/OrderUKLogo.png";
 import locationIcon from "../../assets/LocationIcon.png";
@@ -17,6 +17,7 @@ const navLinks = [
 
 const Navbar = () => {
   const [menuOpen, setMenuOpen] = useState(false);
+  const [activeIndex,setActiveIndex] = useState(0);
 
   return (
     <>
@@ -90,8 +91,12 @@ const Navbar = () => {
               <Link
                 key={link.label}
                 to={link.path}
+                onClick={()=>setActiveIndex(i)}
+
                 className={
-                  i === 0
+
+
+                  activeIndex === i
                     ? 'w-[127px] h-[45px] bg-brand-orange text-white rounded-pill flex items-center justify-center transition-colors duration-200 hover:bg-[#e07a00]'
                     : 'text-brand-dark hover:text-brand-orange transition-colors'
                 }

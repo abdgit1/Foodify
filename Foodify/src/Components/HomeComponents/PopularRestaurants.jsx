@@ -1,9 +1,13 @@
 import React from 'react'
+import RestaurantGrid from '../../Components/HomeComponents/Menu/RestaurantGrid';
+
 
 const PopularRestaurants = () => {
   return (
-    <div>PopularRestaurants</div>
+    
+      <RestaurantGrid />
   )
 }
 
-export default PopularRestaurants
+export default PopularRestaurants  
+

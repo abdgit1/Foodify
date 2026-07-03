@@ -1,9 +1,13 @@
 import React from 'react'
+import CategoryGrid from '../../Components/HomeComponents/Menu/CategoryGrid';
+
 
 const PopularCategories = () => {
   return (
-    <div>PopularCategories</div>
+    
+      <CategoryGrid />
   )
 }
 
-export default PopularCategories
+export default PopularCategories  
+
