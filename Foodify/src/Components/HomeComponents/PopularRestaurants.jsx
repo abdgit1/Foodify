@@ -2,10 +2,10 @@ import React from 'react'
 import RestaurantGrid from '../../Components/HomeComponents/Menu/RestaurantGrid';
 
 
-const PopularRestaurants = () => {
+const PopularRestaurants = ({title}) => {
   return (
     
-      <RestaurantGrid />
+      <RestaurantGrid  title={title}/>
   )
 }
 

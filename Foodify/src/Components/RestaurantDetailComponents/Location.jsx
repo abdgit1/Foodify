@@ -49,19 +49,54 @@ const restaurant = {
   },
 };
 
-// Custom pin icon for the nearby-branch marker (matches Figma's pin graphic)
-const nearbyPinIcon = new L.Icon({
-  iconUrl: pinMarker,
-  iconSize: [50, 50],
-  iconAnchor: [25, 50],
-});
+// Custom marker matching Figma exactly: white label pill + orange circular pin badge.
+// Built as a divIcon (real HTML/CSS) instead of a plain image, since Figma's marker
+// is actually two elements combined, not a single icon graphic.
+const createNearbyPinIcon = (name, branch) =>
+  L.divIcon({
+    className: '',
+    html: `
+      <div style="display:flex; align-items:center;">
+        <div style="
+          background:#ffffff;
+          border-radius:12px;
+          box-shadow:0px 4px 8px rgba(0,0,0,0.2);
+          padding:10px 26px 10px 16px;
+          font-family:inherit;
+          white-space:nowrap;
+          line-height:1.35;
+        ">
+          <div style="font-size:15px; font-weight:700; color:#03081F;">${name}</div>
+          <div style="font-size:13px; font-weight:500; color:#4a4a4a;">${branch}</div>
+        </div>
+        <div style="
+          width:46px;
+          height:46px;
+          background:black;
+          border-radius:50%;
+          display:flex;
+          align-items:center;
+          justify-content:center;
+          margin-left:-18px;
+          box-shadow:0px 4px 8px rgba(0,0,0,0.2);
+        ">
+          <img src="${pinMarker}" style="width:28px; height:28px; object-fit:contain;" />
+        </div>
+      </div>
+    `,
+    iconSize: [260, 46],
+    iconAnchor: [242, 23],
+  });
 
 const Location = () => {
   return (
-    <div className="w-full flex flex-col gap-6 lg:gap-8 px-4 lg:px-0">
+    <div className="w-full flex flex-col gap-6 lg:gap-8 px-4 sm:px-6 lg:px-10">
 
       {/* ── Info row: Delivery / Contact / Operational Times ── */}
-      <div className="w-full max-w-[1528px] mx-auto rounded-[12px] shadow-[5px_5px_14px_0px_rgba(0,0,0,0.25)] overflow-hidden flex flex-col lg:flex-row bg-[#fbfbfb]">
+      <div
+        className="w-full mx-auto rounded-[12px] shadow-[5px_5px_14px_0px_rgba(0,0,0,0.25)] overflow-hidden flex flex-col lg:flex-row bg-[#fbfbfb]"
+        style={{ maxWidth: '1280px' }}
+      >
 
         {/* Delivery information */}
         <div className="flex-1 p-6 lg:p-10 border-b lg:border-b-0 lg:border-r border-black/10">
@@ -103,7 +138,7 @@ const Location = () => {
         </div>
 
         {/* Operational Times — dark panel */}
-        <div className="lg:w-[496px] bg-[#03081F] text-white p-6 lg:p-10 m-4 rounded-[12px] lg:m-0 lg:rounded-none lg:rounded-r-[12px]">
+        <div className="lg:w-[416px] bg-[#03081F] text-white p-6 lg:p-10 m-4 rounded-[12px] lg:m-0 lg:rounded-none lg:rounded-r-[12px]">
           <div className="flex items-center gap-3 mb-4">
             <img src={clockIcon} alt="" className="w-[32px] h-[32px] lg:w-[45px] lg:h-[45px] object-contain" />
             <h3 className="text-[18px] lg:text-[22px] font-bold">Operational Times</h3>
@@ -119,9 +154,12 @@ const Location = () => {
       </div>
 
       {/* ── Map section — real live map, centered on this restaurant's actual coordinates ── */}
-      <div className="relative w-full max-w-[1528px] mx-auto h-[400px] lg:h-[659px] rounded-[12px] overflow-hidden shadow-[5px_5px_14px_0px_rgba(0,0,0,0.25)]">
+      <div
+        className="relative w-full mx-auto h-[400px] lg:h-[560px] rounded-[12px] overflow-hidden shadow-[5px_5px_14px_0px_rgba(0,0,0,0.25)]"
+        style={{ maxWidth: '1280px' }}
+      >
         <MapContainer
-          center={[restaurant.location.lat, restaurant.location.lng]}
+          center={[restaurant.mapCard.location.lat - 0.004, restaurant.mapCard.location.lng - 0.014]}
           zoom={15}
           scrollWheelZoom={false}
           style={{ width: '100%', height: '100%', opacity: 0.9 }}
@@ -133,7 +171,7 @@ const Location = () => {
           {/* Nearby branch marker — real position on the actual map, not a fixed pixel mockup */}
           <Marker
             position={[restaurant.mapCard.location.lat, restaurant.mapCard.location.lng]}
-            icon={nearbyPinIcon}
+            icon={createNearbyPinIcon(restaurant.mapCard.name, restaurant.mapCard.branch)}
           >
             <Popup>{restaurant.mapCard.name} {restaurant.mapCard.branch}</Popup>
           </Marker>
