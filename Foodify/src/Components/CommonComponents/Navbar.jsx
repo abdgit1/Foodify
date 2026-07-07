@@ -5,7 +5,6 @@ import logo from "../../assets/OrderUKLogo.png";
 import locationIcon from "../../assets/LocationIcon.png";
 import basketIcon from "../../assets/Full Shopping Basket.png";
 import arrowDownIcon from "../../assets/Forward Button.png";
-import aycanAvatar from "../../assets/AycanAvatar.png";
 import { Menu } from "lucide-react";
 import ThemeToggle from "./ThemeToggle";
 
@@ -159,7 +158,7 @@ const Navbar = () => {
         </div>
       </div>
 
-      {/* ══════════════════════ MOBILE (per Figma "Mobile Home", node 1:347) ══════════════════════ */}
+      {/* ══════════════════════ MOBILE (Modified Segment Layer) ══════════════════════ */}
       <div className="lg:hidden w-full relative">
         {/* Row 1: Logo + Theme Toggle + Hamburger */}
         <div className="flex items-center justify-between px-4 pt-[27px] pb-[18px]">
@@ -174,17 +173,27 @@ const Navbar = () => {
           </div>
         </div>
 
-        {/* Row 2: Promo/basket bar — avatar+name inline in orange segment, basket chip in green segment */}
+        {/* Row 2: Promo/basket bar — Replacement Login Action Container instead of Avatar */}
         <div className="w-full h-[77px] flex items-center">
-          {/* Orange segment — rider avatar + name, vertically centered, plain text (no pill bg) */}
-          <div className="flex-1 h-full bg-brand-orange flex items-center gap-3 px-5">
-            <img
-              src={aycanAvatar}
-              alt="Aycan"
-              className="w-[44px] h-[44px] rounded-full object-cover"
-            />
-            <span className="text-[16px] font-bold text-brand-dark">Aycan</span>
-          </div>
+          {/* Orange segment — Integrated Login link matching desktop styles contextually */}
+          <Link 
+            to="/login"
+            className="flex-1 h-full bg-brand-orange flex items-center gap-3 px-5 hover:bg-brand-orange/90 transition-colors"
+          >
+            {/* Inverted layout to place white profile icon wrapper into deep contrast */}
+            <div className="w-[34px] h-[34px] bg-brand-dark rounded-full flex items-center justify-center shrink-0">
+              <svg
+                className="w-4 h-4 text-white"
+                fill="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5-4-8-4z" />
+              </svg>
+            </div>
+            <span className="text-[16px] font-bold text-brand-dark select-none whitespace-nowrap">
+              Login/Signup
+            </span>
+          </Link>
 
           {/* Green segment — basket icon + price */}
           <div className="flex items-center bg-brand-green h-full w-[220px] justify-center gap-2 shrink-0">
