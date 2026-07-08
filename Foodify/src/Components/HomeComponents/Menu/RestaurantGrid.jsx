@@ -10,16 +10,27 @@ const restaurantsData = [
 ];
 
 
-function RestaurantGrid({ title }) {
+function RestaurantGrid({ type }) {
   return (
     <section className="px-6 py-8">
-      {/* If a custom title is passed, use it. Otherwise, fall back to "Popular Restaurants" */}
-      <h2 className="text-2xl font-bold mb-4">{title || "Popular Restaurants"}</h2>
-      <div className="grid grid-cols-6 gap-5">
+      <h2 className="text-2xl font-bold mb-4">{type} Restaurants</h2>
+      
+      {/* Mobile: sliding row */}
+      <div className="flex lg:hidden gap-4 overflow-x-auto snap-x snap-mandatory scrollbar-hide pb-2">
+        {restaurantsData.map((r) => (
+          <div key={r.id} className="flex-shrink-0 w-[160px] snap-start">
+            <RestaurantCard {...r} />
+          </div>
+        ))}
+      </div>
+
+      {/* Desktop: unchanged grid */}
+      <div className="hidden lg:grid grid-cols-6 gap-5">
         {restaurantsData.map((r) => (
           <RestaurantCard key={r.id} {...r} />
         ))}
       </div>
+
     </section>
   );
 }

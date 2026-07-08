@@ -23,7 +23,7 @@ export default function RestaurantDetail() {
   };
 
   return (
-    <div className="mx-auto space-y-2 px-20 pb-20">
+    <div className="mx-auto space-y-2 lg:px-20 lg:pb-20 px-4 sm:px-6 md:px-12.5">
       {/* Restaurant Categories With Items */}
       <div className="space-y-14">
         {data.map((category) => (

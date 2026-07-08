@@ -9,11 +9,12 @@ const categoriesData = [
   { id: 6, image: "/src/assets/category6.png", name: "Category 3", restaurantCount: "8 Restaurants" },
 ];
 
+
 function CategoryGrid() {
   return (
     <section className="px-6 py-8">
       <h2 className="text-2xl font-bold mb-4">Order.uk Popular Categories 🤩</h2>
-      <div className="grid grid-cols-6 gap-5">
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4 md:gap-5">
         {categoriesData.map((cat) => (
           <CategoryCard key={cat.id} {...cat} />
         ))}
@@ -23,3 +24,4 @@ function CategoryGrid() {
 }
 
 export default CategoryGrid;
+

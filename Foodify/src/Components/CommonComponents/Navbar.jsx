@@ -7,6 +7,7 @@ import basketIcon from "../../assets/Full Shopping Basket.png";
 import arrowDownIcon from "../../assets/Forward Button.png";
 import { Menu } from "lucide-react";
 import ThemeToggle from "./ThemeToggle";
+import { useAuthModal } from "../../context/AuthModalContext";
 
 const navLinks = [
   { label: "Home", path: "/" },
@@ -18,6 +19,7 @@ const navLinks = [
 
 const Navbar = () => {
   const [menuOpen, setMenuOpen] = useState(false);
+  const { openLogin } = useAuthModal();
 
   return (
     <div>
@@ -137,8 +139,10 @@ const Navbar = () => {
             <div className="flex items-center gap-4">
               <ThemeToggle />
 
-              <Link
-                to="/login"
+              {/* Was: <Link to="/login">. Now opens the AuthModal instead of navigating. */}
+              <button
+                type="button"
+                onClick={openLogin}
                 className="w-[234px] h-[61px] bg-brand-dark text-white rounded-pill flex items-center justify-center gap-3 font-nav text-sm font-semibold hover:opacity-90 transition-opacity"
               >
                 <div className="w-[30px] h-[30px] bg-brand-orange rounded-full flex items-center justify-center">
@@ -152,7 +156,7 @@ const Navbar = () => {
                 </div>
 
                 <span>Login/Signup</span>
-              </Link>
+              </button>
             </div>
           </div>
         </div>
@@ -173,11 +177,12 @@ const Navbar = () => {
           </div>
         </div>
 
-        {/* Row 2: Promo/basket bar — Replacement Login Action Container instead of Avatar */}
+        {/* Row 2: Promo/basket bar — Login action opens AuthModal instead of navigating */}
         <div className="w-full h-[77px] flex items-center">
-          {/* Orange segment — Integrated Login link matching desktop styles contextually */}
-          <Link 
-            to="/login"
+          {/* Orange segment — Integrated Login trigger matching desktop styles contextually */}
+          <button
+            type="button"
+            onClick={openLogin}
             className="flex-1 h-full bg-brand-orange flex items-center gap-3 px-5 hover:bg-brand-orange/90 transition-colors"
           >
             {/* Inverted layout to place white profile icon wrapper into deep contrast */}
@@ -193,7 +198,7 @@ const Navbar = () => {
             <span className="text-[16px] font-bold text-brand-dark select-none whitespace-nowrap">
               Login/Signup
             </span>
-          </Link>
+          </button>
 
           {/* Green segment — basket icon + price */}
           <div className="flex items-center bg-brand-green h-full w-[220px] justify-center gap-2 shrink-0">
@@ -236,13 +241,17 @@ const Navbar = () => {
                 </NavLink>
               )
             )}
-            <Link
-              to="/login"
-              onClick={() => setMenuOpen(false)}
-              className="text-brand-orange font-semibold"
+            {/* Was: <Link to="/login">. Now opens the AuthModal instead of navigating. */}
+            <button
+              type="button"
+              onClick={() => {
+                setMenuOpen(false);
+                openLogin();
+              }}
+              className="text-brand-orange font-semibold text-left"
             >
               Login/Signup
-            </Link>
+            </button>
           </div>
         )}
       </div>
