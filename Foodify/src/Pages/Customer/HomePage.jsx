@@ -17,9 +17,9 @@ const Home = () => {
       <Navbar />
       <HeroBanner />
       <div id="menu">
-      <ExclusiveDeals />
-      <PopularCategories />
-      <PopularRestaurants />
+        <ExclusiveDeals />
+        <PopularCategories />
+        <PopularRestaurants title="Popular Restaurants" />
       </div>
       <div className="mx-auto max-w-6xl space-y-6 p-6">
 

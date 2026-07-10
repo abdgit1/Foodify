@@ -1,6 +1,9 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { useDispatch, useSelector } from 'react-redux';
 import logo from '../../assets/OrderUKLogo.png';
+import { registerUser } from '../../features/authSlice';
+import { useAuthModal } from '../../context/AuthModalContext';
 
 const Signup = ({ embedded = false }) => {
   const [formData, setFormData] = useState({
@@ -12,14 +15,43 @@ const Signup = ({ embedded = false }) => {
     city: '',
   });
 
+  // Purely local — for the client-side password-match check.
+  // Kept separate from Redux's `error`, which is reserved for real backend errors.
+  const [localError, setLocalError] = useState(null);
+
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+  const { close } = useAuthModal();
+
+  const { loading, error } = useSelector((state) => state.auth);
+
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // Submission logic (validation + API/Redux call) comes later
-    console.log('Signup form data:', formData);
+    setLocalError(null);
+
+    // Client-side check first — no point calling the API if this is
+    // already wrong, and the user gets instant feedback instead of
+    // waiting on a network round-trip just to be told this.
+    if (formData.password !== formData.confirm_password) {
+      setLocalError('Passwords do not match.');
+      return;
+    }
+
+    try {
+      await dispatch(registerUser(formData)).unwrap();
+
+      if (embedded) {
+        close();
+      } else {
+        navigate('/');
+      }
+    } catch {
+      // Real backend error is already saved in Redux state (see `error` below)
+    }
   };
 
   const inputClass =
@@ -42,6 +74,13 @@ const Signup = ({ embedded = false }) => {
         <p className="text-[14px] text-black/60 dark:text-white/60 text-center mb-8">
           Sign up to start ordering.
         </p>
+
+        {/* Local validation error takes priority; otherwise show the real backend error */}
+        {(localError || error) && (
+          <p className="text-[13px] text-red-500 text-center mb-4 -mt-4">
+            {localError || error}
+          </p>
+        )}
 
         <form onSubmit={handleSubmit} className="flex flex-col gap-5">
           {/* Username */}
@@ -130,9 +169,10 @@ const Signup = ({ embedded = false }) => {
 
           <button
             type="submit"
-            className="h-[52px] w-full mt-2 rounded-full bg-[#fc8a06] text-white font-bold text-[16px] hover:bg-[#e07a00] active:scale-[0.98] transition-all shadow-md"
+            disabled={loading}
+            className="h-[52px] w-full mt-2 rounded-full bg-[#fc8a06] text-white font-bold text-[16px] hover:bg-[#e07a00] active:scale-[0.98] transition-all shadow-md disabled:opacity-60 disabled:cursor-not-allowed"
           >
-            Sign Up
+            {loading ? 'Creating account…' : 'Sign Up'}
           </button>
         </form>
 

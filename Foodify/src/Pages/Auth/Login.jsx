@@ -1,6 +1,9 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { useDispatch, useSelector } from 'react-redux';
 import logo from '../../assets/OrderUKLogo.png';
+import { loginUser } from '../../features/authSlice';
+import { useAuthModal } from '../../context/AuthModalContext';
 
 const Login = ({ embedded = false }) => {
   const [formData, setFormData] = useState({
@@ -8,14 +11,34 @@ const Login = ({ embedded = false }) => {
     password: '',
   });
 
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+  const { close } = useAuthModal(); // to close the popup on success, if used inside the modal
+
+  // Reading straight from the Redux whiteboard's "auth" section
+  const { loading, error } = useSelector((state) => state.auth);
+
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // Submission logic (validation + API/Redux call) comes later
-    console.log('Login form data:', formData);
+
+    // dispatch(...) sends the thunk off; .unwrap() lets us await the real
+    // result here and catch a clean rejection, instead of just firing and forgetting.
+    try {
+      await dispatch(loginUser(formData)).unwrap();
+
+      if (embedded) {
+        close(); // was opened via the popup — just close it
+      } else {
+        navigate('/'); // was a full page visit — send them home
+      }
+    } catch {
+      // error is already saved in Redux state via the rejected case,
+      // so nothing extra needed here — the UI below reads `error` directly.
+    }
   };
 
   const cardContent = (
@@ -34,6 +57,13 @@ const Login = ({ embedded = false }) => {
         <p className="text-[14px] text-black/60 dark:text-white/60 text-center mb-8">
           Log in to continue ordering.
         </p>
+
+        {/* Show the backend's real error message, if the last attempt failed */}
+        {error && (
+          <p className="text-[13px] text-red-500 text-center mb-4 -mt-4">
+            {error}
+          </p>
+        )}
 
         <form onSubmit={handleSubmit} className="flex flex-col gap-5">
           {/* Email */}
@@ -70,9 +100,10 @@ const Login = ({ embedded = false }) => {
 
           <button
             type="submit"
-            className="h-[52px] w-full mt-2 rounded-full bg-[#fc8a06] text-white font-bold text-[16px] hover:bg-[#e07a00] active:scale-[0.98] transition-all shadow-md"
+            disabled={loading}
+            className="h-[52px] w-full mt-2 rounded-full bg-[#fc8a06] text-white font-bold text-[16px] hover:bg-[#e07a00] active:scale-[0.98] transition-all shadow-md disabled:opacity-60 disabled:cursor-not-allowed"
           >
-            Log In
+            {loading ? 'Logging in…' : 'Log In'}
           </button>
         </form>
 

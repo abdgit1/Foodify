@@ -1,13 +1,15 @@
 import React, { useState } from "react";
-import { Link, NavLink } from "react-router-dom";
+import { Link, NavLink, useNavigate } from "react-router-dom";
 import { HashLink } from "react-router-hash-link";
+import { useDispatch, useSelector } from "react-redux";
 import logo from "../../assets/OrderUKLogo.png";
 import locationIcon from "../../assets/LocationIcon.png";
 import basketIcon from "../../assets/Full Shopping Basket.png";
 import arrowDownIcon from "../../assets/Forward Button.png";
-import { Menu } from "lucide-react";
+import { Menu, LogOut } from "lucide-react";
 import ThemeToggle from "./ThemeToggle";
 import { useAuthModal } from "../../context/AuthModalContext";
+import { logout } from "../../features/authSlice";
 
 const navLinks = [
   { label: "Home", path: "/" },
@@ -20,6 +22,19 @@ const navLinks = [
 const Navbar = () => {
   const [menuOpen, setMenuOpen] = useState(false);
   const { openLogin } = useAuthModal();
+
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+
+  // Reading auth state from the whiteboard — this is what makes the
+  // Navbar automatically update the instant someone logs in or out,
+  // with zero manual wiring beyond this one line.
+  const { user, isAuthenticated } = useSelector((state) => state.auth);
+
+  const handleLogout = () => {
+    dispatch(logout());
+    navigate("/");
+  };
 
   return (
     <div>
@@ -139,24 +154,46 @@ const Navbar = () => {
             <div className="flex items-center gap-4">
               <ThemeToggle />
 
-              {/* Was: <Link to="/login">. Now opens the AuthModal instead of navigating. */}
-              <button
-                type="button"
-                onClick={openLogin}
-                className="w-[234px] h-[61px] bg-brand-dark text-white rounded-pill flex items-center justify-center gap-3 font-nav text-sm font-semibold hover:opacity-90 transition-opacity"
-              >
-                <div className="w-[30px] h-[30px] bg-brand-orange rounded-full flex items-center justify-center">
-                  <svg
-                    className="w-4 h-4 text-white"
-                    fill="currentColor"
-                    viewBox="0 0 24 24"
+              {isAuthenticated ? (
+                /* Logged in — show name + logout instead of Login/Signup */
+                <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-2 pl-2">
+                    <div className="w-[36px] h-[36px] bg-brand-orange rounded-full flex items-center justify-center text-white font-bold text-[14px]">
+                      {user?.username?.[0]?.toUpperCase() || "U"}
+                    </div>
+                    <span className="text-[14px] font-semibold text-brand-dark dark:text-white">
+                      {user?.username}
+                    </span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={handleLogout}
+                    aria-label="Log out"
+                    className="w-[40px] h-[40px] flex items-center justify-center rounded-full bg-black/5 dark:bg-white/10 hover:bg-black/10 dark:hover:bg-white/20 transition-colors"
                   >
-                    <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5-4-8-4z" />
-                  </svg>
+                    <LogOut size={18} className="text-brand-dark dark:text-white" />
+                  </button>
                 </div>
+              ) : (
+                /* Was: <Link to="/login">. Now opens the AuthModal instead of navigating. */
+                <button
+                  type="button"
+                  onClick={openLogin}
+                  className="w-[234px] h-[61px] bg-brand-dark text-white rounded-pill flex items-center justify-center gap-3 font-nav text-sm font-semibold hover:opacity-90 transition-opacity"
+                >
+                  <div className="w-[30px] h-[30px] bg-brand-orange rounded-full flex items-center justify-center">
+                    <svg
+                      className="w-4 h-4 text-white"
+                      fill="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5-4-8-4z" />
+                    </svg>
+                  </div>
 
-                <span>Login/Signup</span>
-              </button>
+                  <span>Login/Signup</span>
+                </button>
+              )}
             </div>
           </div>
         </div>
@@ -177,28 +214,48 @@ const Navbar = () => {
           </div>
         </div>
 
-        {/* Row 2: Promo/basket bar — Login action opens AuthModal instead of navigating */}
+        {/* Row 2: Promo/basket bar — Login action opens AuthModal, or shows user when logged in */}
         <div className="w-full h-[77px] flex items-center">
-          {/* Orange segment — Integrated Login trigger matching desktop styles contextually */}
-          <button
-            type="button"
-            onClick={openLogin}
-            className="flex-1 h-full bg-brand-orange flex items-center gap-3 px-5 hover:bg-brand-orange/90 transition-colors"
-          >
-            {/* Inverted layout to place white profile icon wrapper into deep contrast */}
-            <div className="w-[34px] h-[34px] bg-brand-dark rounded-full flex items-center justify-center shrink-0">
-              <svg
-                className="w-4 h-4 text-white"
-                fill="currentColor"
-                viewBox="0 0 24 24"
+          {isAuthenticated ? (
+            <div className="flex-1 h-full bg-brand-orange flex items-center justify-between px-5">
+              <div className="flex items-center gap-3">
+                <div className="w-[34px] h-[34px] bg-brand-dark rounded-full flex items-center justify-center text-white font-bold text-[14px] shrink-0">
+                  {user?.username?.[0]?.toUpperCase() || "U"}
+                </div>
+                <span className="text-[16px] font-bold text-brand-dark truncate">
+                  {user?.username}
+                </span>
+              </div>
+              <button
+                type="button"
+                onClick={handleLogout}
+                aria-label="Log out"
+                className="w-[34px] h-[34px] flex items-center justify-center rounded-full bg-black/10 hover:bg-black/20 transition-colors shrink-0"
               >
-                <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5-4-8-4z" />
-              </svg>
+                <LogOut size={16} className="text-brand-dark" />
+              </button>
             </div>
-            <span className="text-[16px] font-bold text-brand-dark select-none whitespace-nowrap">
-              Login/Signup
-            </span>
-          </button>
+          ) : (
+            /* Was: <Link to="/login">. Now opens the AuthModal instead of navigating. */
+            <button
+              type="button"
+              onClick={openLogin}
+              className="flex-1 h-full bg-brand-orange flex items-center gap-3 px-5 hover:bg-brand-orange/90 transition-colors"
+            >
+              <div className="w-[34px] h-[34px] bg-brand-dark rounded-full flex items-center justify-center shrink-0">
+                <svg
+                  className="w-4 h-4 text-white"
+                  fill="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5-4-8-4z" />
+                </svg>
+              </div>
+              <span className="text-[16px] font-bold text-brand-dark select-none whitespace-nowrap">
+                Login/Signup
+              </span>
+            </button>
+          )}
 
           {/* Green segment — basket icon + price */}
           <div className="flex items-center bg-brand-green h-full w-[220px] justify-center gap-2 shrink-0">
@@ -241,17 +298,31 @@ const Navbar = () => {
                 </NavLink>
               )
             )}
-            {/* Was: <Link to="/login">. Now opens the AuthModal instead of navigating. */}
-            <button
-              type="button"
-              onClick={() => {
-                setMenuOpen(false);
-                openLogin();
-              }}
-              className="text-brand-orange font-semibold text-left"
-            >
-              Login/Signup
-            </button>
+
+            {isAuthenticated ? (
+              <button
+                type="button"
+                onClick={() => {
+                  setMenuOpen(false);
+                  handleLogout();
+                }}
+                className="text-red-500 font-semibold text-left"
+              >
+                Log Out
+              </button>
+            ) : (
+              /* Was: <Link to="/login">. Now opens the AuthModal instead of navigating. */
+              <button
+                type="button"
+                onClick={() => {
+                  setMenuOpen(false);
+                  openLogin();
+                }}
+                className="text-brand-orange font-semibold text-left"
+              >
+                Login/Signup
+              </button>
+            )}
           </div>
         )}
       </div>
