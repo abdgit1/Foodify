@@ -1,25 +1,32 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import Checkout from "../../Components/cart/Checkout";
+import Checkout from "../../Components/Cart/checkout";
 
-const CART_STORAGE_KEY = "UserCart";
+const MOCK_CART_ITEMS = [
+  {
+    id: 1,
+    title: "Royal Cheese Burger",
+    description: "Juicy beef patty, cheddar cheese, pickles, mustard, and ketchup.",
+    price: 550,
+    quantity: 2,
+    image: "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?auto=format&fit=crop&w=150&h=150&q=80"
+  },
+  {
+    id: 2,
+    title: "Cold Coca Cola",
+    description: "Chilled 330ml can.",
+    price: 120,
+    quantity: 1,
+    image: "https://images.unsplash.com/photo-1622483767028-3f66f32aef97?auto=format&fit=crop&w=150&h=150&q=80"
+  }
+];
 
 export default function Cart() {
-  const [cartItems, setCartItems] = useState([]);
+  const [cartItems, setCartItems] = useState(MOCK_CART_ITEMS);
   const navigate = useNavigate();
 
-  useEffect(() => {
-    const storedCart = JSON.parse(localStorage.getItem(CART_STORAGE_KEY)) || [];
-    setCartItems(storedCart);
-  }, []);
-
-  const saveCart = (updatedCart) => {
-    setCartItems(updatedCart);
-    localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(updatedCart));
-  };
-
   const handleIncrease = (id) => {
-    saveCart(
+    setCartItems(
       cartItems.map((item) =>
         item.id === id ? { ...item, quantity: item.quantity + 1 } : item
       )
@@ -31,7 +38,7 @@ export default function Cart() {
     if (!target) return;
 
     if (target.quantity > 1) {
-      saveCart(
+      setCartItems(
         cartItems.map((item) =>
           item.id === id ? { ...item, quantity: item.quantity - 1 } : item
         )
@@ -42,15 +49,11 @@ export default function Cart() {
   };
 
   const handleRemove = (id) => {
-    saveCart(cartItems.filter((item) => item.id !== id));
+    setCartItems(cartItems.filter((item) => item.id !== id));
   };
 
-  // Was never actually passed to <Checkout> before — that's why "Place Order" did nothing.
-  // TODO (Phase: real backend): this should call POST /order/checkout/ instead of
-  // just clearing localStorage — for now it just simulates a successful order.
   const handleConfirm = () => {
-    saveCart([]);
-    navigate("/orders/track");
+    navigate("/checkout");
   };
 
   return (
@@ -60,6 +63,7 @@ export default function Cart() {
       onDecrease={handleDecrease}
       onRemove={handleRemove}
       confirm={handleConfirm}
+      buttonText="Proceed to Checkout"
     />
   );
 }

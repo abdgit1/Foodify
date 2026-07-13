@@ -9,6 +9,7 @@ import AdminDashboard from './Pages/Admin/AdminDashboard';
 import CategoryDetail from './Pages/Customer/CategoryDetail';
 import DealDetail from './Pages/Customer/DealDetail';
 import Cart from './Pages/Customer/Cart';
+import CheckoutPage from './Pages/Customer/CheckoutPage';
 
 function App() {
   return (
@@ -23,6 +24,7 @@ function App() {
         {/* Admin dashboard — uses its own layout (no Navbar/Footer) */}
         <Route path="/deals/:id" element={<DealDetail />} />
         <Route path="/cart" element={<Cart />} />
+        <Route path="/checkout" element={<CheckoutPage />} />
         <Route path="/admin-dashboard/*" element={<AdminDashboard />} />
       </Routes>
 

@@ -1,25 +1,14 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
+import { useNavigate } from "react-router-dom";
 
 import Card from "./Card";
 import { data } from "/src/utils/dummyData";
 
 export default function RestaurantDetail() {
-  const [userCart, setUserCart] = useState([]);
-
-  useEffect(() => {
-    const storedCart = JSON.parse(localStorage.getItem("UserCart")) || [];
-    setUserCart(storedCart);
-  }, []);
+  const navigate = useNavigate();
 
   const handleAddToCard = (item) => {
-    const updatedCart = [...userCart, item];
-
-    setUserCart(updatedCart);
-
-    setTimeout(() => {
-      localStorage.setItem("UserCart", JSON.stringify(updatedCart));
-      window.alert("Cart Updated");
-    }, 3000);
+    navigate("/cart");
   };
 
   return (

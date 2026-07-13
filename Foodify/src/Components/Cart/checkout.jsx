@@ -1,7 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft, Minus, Plus, Trash2, ShoppingCart } from "lucide-react";
 
-export default function Checkout({ confirm, cartItems, onIncrease, onDecrease, onRemove }) {
+export default function Checkout({ confirm, cartItems, onIncrease, onDecrease, onRemove, buttonText = "Place Order" }) {
   const navigate = useNavigate();
 
   const subTotal = cartItems.reduce(
@@ -9,9 +9,7 @@ export default function Checkout({ confirm, cartItems, onIncrease, onDecrease, o
     0
   );
 
-  const deliveryFee = 2;
-  const discount = subTotal > 50 ? 10 : 0;
-  const total = subTotal + deliveryFee - discount;
+  const total = subTotal;
 
   if (cartItems.length === 0) {
     return (
@@ -40,7 +38,7 @@ export default function Checkout({ confirm, cartItems, onIncrease, onDecrease, o
       <div className="w-full mx-auto" style={{ maxWidth: "1100px" }}>
 
         <button
-          onClick={() => navigate(-1)}
+          onClick={() => navigate("/restaurants")}
           className="flex items-center gap-2 text-[13px] font-semibold text-black/50 dark:text-white/50 hover:text-[#fc8a06] transition-colors mb-6"
         >
           <ArrowLeft size={15} />
@@ -137,14 +135,6 @@ export default function Checkout({ confirm, cartItems, onIncrease, onDecrease, o
                 <span>Subtotal</span>
                 <span>Rs. {subTotal.toFixed(2)}</span>
               </div>
-              <div className="flex justify-between text-black/60 dark:text-white/60">
-                <span>Delivery Fee</span>
-                <span>Rs. {deliveryFee.toFixed(2)}</span>
-              </div>
-              <div className="flex justify-between text-[#fc8a06]">
-                <span>Discount</span>
-                <span>-Rs. {discount.toFixed(2)}</span>
-              </div>
 
               <div className="h-px bg-black/10 dark:bg-white/10 my-2" />
 
@@ -158,7 +148,7 @@ export default function Checkout({ confirm, cartItems, onIncrease, onDecrease, o
               onClick={confirm}
               className="w-full h-[52px] mt-6 rounded-full bg-[#fc8a06] text-white font-bold text-[16px] hover:bg-[#e07a00] active:scale-[0.98] transition-all"
             >
-              Place Order
+              {buttonText}
             </button>
           </div>
         </div>
