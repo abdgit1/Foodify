@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Link, NavLink, useNavigate } from "react-router-dom";
 import { HashLink } from "react-router-hash-link";
 import { useDispatch, useSelector } from "react-redux";
@@ -6,34 +6,62 @@ import logo from "../../assets/OrderUKLogo.png";
 import locationIcon from "../../assets/LocationIcon.png";
 import basketIcon from "../../assets/Full Shopping Basket.png";
 import arrowDownIcon from "../../assets/Forward Button.png";
-import { Menu, LogOut } from "lucide-react";
+import { Menu, LogOut, ChevronDown, Store, ChevronRight } from "lucide-react";
 import ThemeToggle from "./ThemeToggle";
 import { useAuthModal } from "../../context/AuthModalContext";
 import { logout } from "../../features/authSlice";
+import { getAllRestaurants } from "../../services/restaurantservices";
 
 const navLinks = [
   { label: "Home", path: "/" },
   { label: "Browse Menu", path: "/#menu" },
   { label: "Special Offers", path: "/offers" },
-  { label: "Restaurants", path: "/restaurants" },
   { label: "Track Order", path: "/orders/track" },
 ];
 
 const Navbar = () => {
   const [menuOpen, setMenuOpen] = useState(false);
-  const { openLogin } = useAuthModal();
+  const [mobileRestaurantsOpen, setMobileRestaurantsOpen] = useState(false);
+  const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [restaurants, setRestaurants] = useState([]);
+  const [restLoading, setRestLoading] = useState(false);
+  const dropdownRef = useRef(null);
 
+  const { openLogin } = useAuthModal();
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
-  // Reading auth state from the whiteboard — this is what makes the
-  // Navbar automatically update the instant someone logs in or out,
-  // with zero manual wiring beyond this one line.
+  // Fetch restaurants once on mount for dropdown use
+  useEffect(() => {
+    setRestLoading(true);
+    getAllRestaurants()
+      .then(setRestaurants)
+      .catch(() => setRestaurants([]))
+      .finally(() => setRestLoading(false));
+  }, []);
+
+  // Close desktop dropdown when clicking outside
+  useEffect(() => {
+    const handler = (e) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
+        setDropdownOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, []);
+
   const { user, isAuthenticated } = useSelector((state) => state.auth);
 
   const handleLogout = () => {
     dispatch(logout());
     navigate("/");
+  };
+
+  const handleRestaurantSelect = (id) => {
+    setDropdownOpen(false);
+    setMenuOpen(false);
+    navigate(`/restaurants/${id}`);
   };
 
   return (
@@ -149,6 +177,95 @@ const Navbar = () => {
                   </NavLink>
                 )
               )}
+
+              {/* ── Restaurants Dropdown ── */}
+              <div ref={dropdownRef} className="relative">
+                <button
+                  onClick={() => setDropdownOpen((o) => !o)}
+                  className="w-[127px] h-[45px] flex items-center justify-center gap-1.5 text-brand-dark hover:text-brand-orange transition-colors duration-200 font-semibold text-sm"
+                >
+                  Restaurants
+                  <ChevronDown
+                    size={15}
+                    className={`transition-transform duration-200 ${dropdownOpen ? "rotate-180" : ""}`}
+                  />
+                </button>
+
+                {dropdownOpen && (
+                  <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 w-[260px] bg-white dark:bg-[#0a0f2e] rounded-[14px] shadow-[0px_8px_40px_rgba(0,0,0,0.14)] border border-black/5 dark:border-white/5 overflow-hidden z-[9999]">
+                    {/* Header with "View All" link */}
+                    <div className="flex items-center justify-between px-4 py-3 border-b border-black/5 dark:border-white/5">
+                      <span className="text-[12px] font-bold text-black/40 dark:text-white/40 uppercase tracking-wider">
+                        All Restaurants
+                      </span>
+                      <HashLink
+                        smooth
+                        to="/#popular-restaurants"
+                        onClick={() => setDropdownOpen(false)}
+                        className="text-[12px] text-[#fc8a06] font-semibold hover:underline"
+                      >
+                        View All
+                      </HashLink>
+                    </div>
+
+                    {/* Loading */}
+                    {restLoading && (
+                      <div className="p-4 space-y-3">
+                        {[1, 2, 3].map((i) => (
+                          <div key={i} className="flex items-center gap-3 animate-pulse">
+                            <div className="w-10 h-10 rounded-lg bg-black/10 dark:bg-white/10 shrink-0" />
+                            <div className="h-3 flex-1 rounded bg-black/10 dark:bg-white/10" />
+                          </div>
+                        ))}
+                      </div>
+                    )}
+
+                    {/* Empty */}
+                    {!restLoading && restaurants.length === 0 && (
+                      <div className="p-6 text-center text-[13px] text-black/40 dark:text-white/40">
+                        No restaurants available.
+                      </div>
+                    )}
+
+                    {/* List */}
+                    {!restLoading && restaurants.length > 0 && (
+                      <ul className="py-1 max-h-[320px] overflow-y-auto">
+                        {restaurants.map((r) => (
+                          <li key={r.id}>
+                            <button
+                              onClick={() => handleRestaurantSelect(r.id)}
+                              className="w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-black/[0.04] dark:hover:bg-white/[0.04] transition-colors"
+                            >
+                              {r.image ? (
+                                <img
+                                  src={r.image}
+                                  alt={r.name}
+                                  className="w-10 h-10 rounded-lg object-cover shrink-0"
+                                />
+                              ) : (
+                                <div className="w-10 h-10 rounded-lg bg-black/5 dark:bg-white/5 flex items-center justify-center shrink-0">
+                                  <Store size={18} className="text-black/20 dark:text-white/20" />
+                                </div>
+                              )}
+                              <div className="flex-1 min-w-0">
+                                <p className="text-[13px] font-semibold text-[#03081F] dark:text-white truncate">
+                                  {r.name}
+                                </p>
+                                {r.address && (
+                                  <p className="text-[11px] text-black/40 dark:text-white/40 truncate mt-0.5">
+                                    {r.address}
+                                  </p>
+                                )}
+                              </div>
+                              <ChevronRight size={14} className="text-black/25 dark:text-white/25 shrink-0" />
+                            </button>
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                  </div>
+                )}
+              </div>
             </nav>
 
             <div className="flex items-center gap-4">
@@ -272,7 +389,7 @@ const Navbar = () => {
 
         {/* Mobile dropdown menu */}
         {menuOpen && (
-          <div className="w-full px-4 py-4 flex flex-col gap-4 bg-white border-b border-black/10">
+          <div className="w-full px-4 py-4 flex flex-col gap-4 bg-white dark:bg-[#0a0f2e] border-b border-black/10 dark:border-white/10">
             {navLinks.map((link) =>
               link.label === "Browse Menu" ? (
                 <HashLink
@@ -280,7 +397,7 @@ const Navbar = () => {
                   smooth
                   to="/#menu"
                   onClick={() => setMenuOpen(false)}
-                  className="text-brand-dark font-medium"
+                  className="text-brand-dark dark:text-white font-medium"
                 >
                   {link.label}
                 </HashLink>
@@ -291,13 +408,67 @@ const Navbar = () => {
                   end={link.path === "/"}
                   onClick={() => setMenuOpen(false)}
                   className={({ isActive }) =>
-                    isActive ? "text-brand-orange font-semibold" : "text-brand-dark font-medium"
+                    isActive ? "text-brand-orange font-semibold" : "text-brand-dark dark:text-white font-medium"
                   }
                 >
                   {link.label}
                 </NavLink>
               )
             )}
+
+            {/* ── Mobile Restaurants Sub-list ── */}
+            <div>
+              <button
+                onClick={() => setMobileRestaurantsOpen((o) => !o)}
+                className="w-full flex items-center justify-between text-brand-dark dark:text-white font-medium"
+              >
+                <span>Restaurants</span>
+                <ChevronDown
+                  size={16}
+                  className={`transition-transform duration-200 ${mobileRestaurantsOpen ? "rotate-180" : ""}`}
+                />
+              </button>
+
+              {mobileRestaurantsOpen && (
+                <div className="mt-2 ml-3 border-l-2 border-[#fc8a06]/30 pl-3 flex flex-col gap-1">
+                  {/* View All */}
+                  <HashLink
+                    smooth
+                    to="/#popular-restaurants"
+                    onClick={() => {
+                      setMenuOpen(false);
+                      setMobileRestaurantsOpen(false);
+                    }}
+                    className="text-[13px] text-[#fc8a06] font-semibold text-left py-1"
+                  >
+                    View All Restaurants
+                  </HashLink>
+
+                  {restLoading && (
+                    <p className="text-[12px] text-black/40 dark:text-white/40 py-1">Loading…</p>
+                  )}
+
+                  {!restLoading && restaurants.map((r) => (
+                    <button
+                      key={r.id}
+                      onClick={() => handleRestaurantSelect(r.id)}
+                      className="flex items-center gap-2 py-1.5 text-left"
+                    >
+                      {r.image ? (
+                        <img src={r.image} alt={r.name} className="w-8 h-8 rounded-md object-cover shrink-0" />
+                      ) : (
+                        <div className="w-8 h-8 rounded-md bg-black/5 dark:bg-white/5 flex items-center justify-center shrink-0">
+                          <Store size={14} className="text-black/20 dark:text-white/20" />
+                        </div>
+                      )}
+                      <span className="text-[13px] font-medium text-[#03081F] dark:text-white truncate">
+                        {r.name}
+                      </span>
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
 
             {isAuthenticated ? (
               <button
@@ -311,7 +482,6 @@ const Navbar = () => {
                 Log Out
               </button>
             ) : (
-              /* Was: <Link to="/login">. Now opens the AuthModal instead of navigating. */
               <button
                 type="button"
                 onClick={() => {

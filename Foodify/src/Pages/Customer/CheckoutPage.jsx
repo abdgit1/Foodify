@@ -39,7 +39,7 @@ export default function CheckoutPage() {
       `${paymentMethod !== "cash" ? `Transaction ID: ${transactionId}\n` : ""}` +
       `Total Payment: Rs. ${total.toFixed(2)}`
     );
-    navigate("/restaurants");
+    navigate("/#popular-restaurants");
   };
 
   return (
