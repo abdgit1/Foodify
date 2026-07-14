@@ -19,7 +19,9 @@ const Home = () => {
       <div id="menu">
         <ExclusiveDeals />
         <PopularCategories />
-        <PopularRestaurants title="Popular Restaurants" />
+        <div id="popular-restaurants">
+          <PopularRestaurants title="Popular Restaurants" />
+        </div>
       </div>
       <div className="mx-auto max-w-6xl space-y-6 p-6">
 

@@ -24,7 +24,7 @@ export default function Checkout({ confirm, cartItems, onIncrease, onDecrease, o
           Add some delicious food to get started.
         </p>
         <button
-          onClick={() => navigate("/restaurants")}
+          onClick={() => navigate("/#popular-restaurants")}
           className="mt-6 h-[48px] px-8 rounded-full bg-[#fc8a06] text-white font-bold text-[15px] hover:bg-[#e07a00] active:scale-[0.98] transition-all"
         >
           Browse Restaurants
@@ -38,7 +38,7 @@ export default function Checkout({ confirm, cartItems, onIncrease, onDecrease, o
       <div className="w-full mx-auto" style={{ maxWidth: "1100px" }}>
 
         <button
-          onClick={() => navigate("/")}
+          onClick={() => navigate("/restaurants")}
           className="flex items-center gap-2 text-[13px] font-semibold text-black/50 dark:text-white/50 hover:text-[#fc8a06] transition-colors mb-6"
         >
           <ArrowLeft size={15} />
