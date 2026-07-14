@@ -17,7 +17,6 @@ function App() {
       <Routes>
         {/* Customer-facing routes */}
         <Route path="/" element={<HomePage />} />
-        <Route path="/restaurants" element={<RestaurantDetail />} />
         <Route path="/restaurants/:id" element={<RestaurantDetail />} />
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
