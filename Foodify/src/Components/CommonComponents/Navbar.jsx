@@ -23,16 +23,15 @@ const navLinks = [
 const Navbar = () => {
   const [menuOpen, setMenuOpen] = useState(false);
   const [restaurantDropdownOpen, setRestaurantDropdownOpen] = useState(false);
+  const [mobileRestaurantsOpen, setMobileRestaurantsOpen] = useState(false);
   const [restaurants, setRestaurants] = useState([]);
   const [restaurantsLoading, setRestaurantsLoading] = useState(false);
   const dropdownRef = useRef(null);
   const { openLogin } = useAuthModal();
+
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
-  // Reading auth state from the whiteboard — this is what makes the
-  // Navbar automatically update the instant someone logs in or out,
-  // with zero manual wiring beyond this one line.
   const { user, isAuthenticated } = useSelector((state) => state.auth);
 
   // Fetch restaurants once on mount for the dropdown
@@ -60,12 +59,6 @@ const Navbar = () => {
   const handleLogout = () => {
     dispatch(logout());
     navigate("/");
-  };
-
-  const handleRestaurantSelect = (id) => {
-    setRestaurantDropdownOpen(false);
-    setMenuOpen(false);
-    navigate(`/restaurants/${id}`);
   };
 
   return (
@@ -248,7 +241,7 @@ const Navbar = () => {
                   >
                     {link.label}
                   </NavLink>
-                )
+                );
               })}
             </nav>
 
@@ -361,32 +354,92 @@ const Navbar = () => {
 
         {/* Mobile dropdown menu */}
         {menuOpen && (
-          <div className="w-full px-4 py-4 flex flex-col gap-4 bg-white border-b border-black/10">
-            {navLinks.map((link) =>
-              link.label === "Browse Menu" ? (
-                <HashLink
-                  key={link.label}
-                  smooth
-                  to="/#menu"
-                  onClick={() => setMenuOpen(false)}
-                  className="text-brand-dark font-medium"
-                >
-                  {link.label}
-                </HashLink>
-              ) : (
+          <div className="w-full px-4 py-4 flex flex-col gap-4 bg-white dark:bg-[#0a0f2e] border-b border-black/10 dark:border-white/10">
+            {navLinks.map((link) => {
+              if (link.label === "Browse Menu") {
+                return (
+                  <HashLink
+                    key={link.label}
+                    smooth
+                    to="/#menu"
+                    onClick={() => setMenuOpen(false)}
+                    className="text-brand-dark dark:text-white font-medium"
+                  >
+                    {link.label}
+                  </HashLink>
+                );
+              }
+
+              if (link.hasDropdown) {
+                return (
+                  <div key={link.label}>
+                    <button
+                      onClick={() => setMobileRestaurantsOpen((o) => !o)}
+                      className="flex items-center justify-between w-full text-brand-dark dark:text-white font-medium"
+                    >
+                      <span>{link.label}</span>
+                      <ChevronDown
+                        size={16}
+                        className={`transition-transform duration-200 ${mobileRestaurantsOpen ? "rotate-180" : ""}`}
+                      />
+                    </button>
+
+                    {mobileRestaurantsOpen && (
+                      <div className="mt-2 pl-3 border-l-2 border-brand-orange flex flex-col gap-1">
+                        {restaurantsLoading ? (
+                          <div className="flex items-center gap-2 py-2 text-black/40 dark:text-white/40 text-[13px]">
+                            <Loader2 size={13} className="animate-spin" />
+                            Loading…
+                          </div>
+                        ) : restaurants.length === 0 ? (
+                          <p className="text-[13px] text-black/40 dark:text-white/40 py-2">
+                            No restaurants found.
+                          </p>
+                        ) : (
+                          restaurants.map((r) => (
+                            <Link
+                              key={r.id}
+                              to={`/restaurants/${r.id}`}
+                              onClick={() => { setMenuOpen(false); setMobileRestaurantsOpen(false); }}
+                              className="flex items-center gap-2 py-2 text-[14px] text-[#03081F] dark:text-white hover:text-brand-orange transition-colors"
+                            >
+                              {r.image ? (
+                                <img
+                                  src={r.image}
+                                  alt={r.name}
+                                  className="w-[28px] h-[28px] rounded-md object-cover shrink-0"
+                                />
+                              ) : (
+                                <div className="w-[28px] h-[28px] rounded-md bg-black/5 dark:bg-white/10 flex items-center justify-center shrink-0">
+                                  <Store size={13} className="text-black/30 dark:text-white/30" />
+                                </div>
+                              )}
+                              {r.name}
+                            </Link>
+                          ))
+                        )}
+                      </div>
+                    )}
+                  </div>
+                );
+              }
+
+              return (
                 <NavLink
                   key={link.label}
                   to={link.path}
                   end={link.path === "/"}
                   onClick={() => setMenuOpen(false)}
                   className={({ isActive }) =>
-                    isActive ? "text-brand-orange font-semibold" : "text-brand-dark font-medium"
+                    isActive
+                      ? "text-brand-orange font-semibold"
+                      : "text-brand-dark dark:text-white font-medium"
                   }
                 >
                   {link.label}
                 </NavLink>
-              )
-            )}
+              );
+            })}
 
             {isAuthenticated ? (
               <button

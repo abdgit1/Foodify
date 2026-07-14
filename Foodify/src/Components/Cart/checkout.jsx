@@ -38,7 +38,7 @@ export default function Checkout({ confirm, cartItems, onIncrease, onDecrease, o
       <div className="w-full mx-auto" style={{ maxWidth: "1100px" }}>
 
         <button
-          onClick={() => navigate("/restaurants")}
+          onClick={() => navigate("/")}
           className="flex items-center gap-2 text-[13px] font-semibold text-black/50 dark:text-white/50 hover:text-[#fc8a06] transition-colors mb-6"
         >
           <ArrowLeft size={15} />
