@@ -10,6 +10,7 @@ import CategoryDetail from './Pages/Customer/CategoryDetail';
 import DealDetail from './Pages/Customer/DealDetail';
 import Cart from './Pages/Customer/Cart';
 import CheckoutPage from './Pages/Customer/CheckoutPage';
+import TrackOrder from './Pages/Customer/TrackOrder';
 
 function App() {
   return (
@@ -21,6 +22,7 @@ function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
         <Route path="/category/:id" element={<CategoryDetail />} />
+        <Route path="/orders/track" element={<TrackOrder />} />
         {/* Admin dashboard — uses its own layout (no Navbar/Footer) */}
         <Route path="/deals/:id" element={<DealDetail />} />
         <Route path="/cart" element={<Cart />} />
