@@ -1,4 +1,4 @@
-function OfferCard({ image, restaurantLabel, title, discount, onAdd, onSelect }) {
+function OfferCard({ image, restaurantLabel, title, price, onAdd, onSelect }) {
   return (
     <button
       onClick={onSelect}
@@ -16,15 +16,16 @@ function OfferCard({ image, restaurantLabel, title, discount, onAdd, onSelect })
         }}
       />
 
-      <div className="absolute top-0 right-0 bg-[#03081f] w-[70px] h-[54px] md:w-[88px] md:h-[66px] rounded-bl-xl flex items-center justify-center">
-        <span className="text-white font-bold text-sm md:text-lg">{discount}</span>
-      </div>
-
       <div className="absolute left-4 md:left-6 bottom-4 md:bottom-6 max-w-[70%]">
         <p className="text-[#fc8a06] font-medium text-sm md:text-lg">
           {restaurantLabel}
         </p>
         <p className="text-white font-bold text-xl md:text-3xl">{title}</p>
+        {price && (
+          <p className="text-[#fc8a06] font-bold text-base md:text-lg mt-1">
+            {price.startsWith("GBP") ? price : `GBP ${price}`}
+          </p>
+        )}
       </div>
 
       <span

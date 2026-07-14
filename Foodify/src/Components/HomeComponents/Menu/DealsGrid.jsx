@@ -1,8 +1,8 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import DealCard from "./DealCard";
+import ScrollableTabs from "../../CommonComponents/ScrollableTabs";
 import { getAllDeals } from "../../../services/dealService";
-
 function DealsGrid() {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("All");
@@ -48,38 +48,33 @@ function DealsGrid() {
 
   return (
     <section className="px-6 py-8">
-      <div className="flex items-center">
-        <h2 className="text-xl md:text-2xl font-bold mb-4">
-          🎊 Order.uk exclusive deals
-        </h2>
+      <div className="mb-6 space-y-4">
+        <div className="flex items-center justify-between gap-4">
+          <h2 className="text-xl md:text-2xl font-bold">
+            🎊 Order.uk exclusive deals
+          </h2>
 
-        {/* Mobile: dropdown */}
-        <select
-          value={activeTab}
-          onChange={(e) => setActiveTab(e.target.value)}
-          className="lg:hidden ml-auto mb-4 border border-orange-500 rounded-full px-4 py-2 text-sm font-medium text-black bg-white"
-        >
-          {tabs.map((tab) => (
-            <option key={tab} value={tab}>{tab}</option>
-          ))}
-        </select>
+          {/* Mobile: compact dropdown beside the title */}
+          <select
+            value={activeTab}
+            onChange={(e) => setActiveTab(e.target.value)}
+            className="lg:hidden shrink-0 border border-orange-500 rounded-full px-4 py-2 text-sm font-medium text-black bg-white"
+          >
+            {tabs.map((tab) => (
+              <option key={tab} value={tab}>{tab}</option>
+            ))}
+          </select>
+        </div>
 
-        <nav className="hidden lg:flex flex-wrap justify-end gap-1 mb-4 ml-auto">
-          {tabs.map((tab) => (
-            <button
-              key={tab}
-              onClick={() => setActiveTab(tab)}
-              className={`px-4 sm:px-6 py-2 rounded-full transition-all duration-300 text-xs sm:text-sm md:text-base whitespace-nowrap cursor-pointer ${
-                activeTab === tab
-                  ? "border border-orange-500 bg-white font-bold text-black"
-                  : "border border-transparent font-medium text-gray-700 hover:bg-black/5 hover:text-black"
-              }`}
-            >
-              {tab}
-            </button>
-          ))}
-        </nav>
-      </div>
+        {/* Desktop: scrollable row — scales to any number of categories */}
+        <ScrollableTabs
+          tabs={tabs}
+          activeTab={activeTab}
+          onSelect={setActiveTab}
+          variant="outline"
+          ariaLabel="Deal categories"
+          className="hidden lg:block"
+        />      </div>
 
       {loading && (
         <p className="text-black/50 text-[15px]">Loading deals…</p>

@@ -17,6 +17,7 @@ function normalizeDeal(deal) {
 
   return {
     id: deal.id,
+    restaurantId: deal.restaurant_id || firstItem?.restaurant?.id,
     name: deal.name,
     description: deal.description,
     comboPrice: deal.combo_price,

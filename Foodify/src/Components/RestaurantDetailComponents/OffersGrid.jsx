@@ -1,42 +1,48 @@
+import React from "react";
 import OfferCard from "./OfferCard";
+import { Loader2 } from "lucide-react";
 
-const offers = [
-  {
-    id: 1,
-    image: "/src/assets/offer1.png",
-    restaurantLabel: "Restaurant",
-    title: "Chef Burgers London",
-    discount: "-40%",
-    },
-  {
-    id: 2,
-    image: "/src/assets/offer2.png",
-    restaurantLabel: "Restaurant",
-    title: "Grand Ai Cafe London",
-    discount: "-20%",
-    },
-  {
-    id: 3,
-    image: "/src/assets/offer3.png",
-    restaurantLabel: "Restaurant",
-    title: "Butterbrot Café London",
-    discount: "-17%",
-    },
-];
+function OffersGrid({ deals = [], loading, error, onAddOffer, onSelectOffer }) {
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-12 text-black/40 dark:text-white/40">
+        <Loader2 size={24} className="animate-spin mr-2" />
+        <span>Loading deals…</span>
+      </div>
+    );
+  }
 
-function OffersGrid({ onAddOffer, onSelectOffer }) {
+  if (error) {
+    return (
+      <p className="text-red-500 font-semibold px-6 py-4">
+        Failed to load deals. ({error})
+      </p>
+    );
+  }
+
+  if (deals.length === 0) {
+    return (
+      <p className="text-black/40 dark:text-white/40 px-6 py-4 font-medium text-[15px]">
+        No active deals found for this restaurant.
+      </p>
+    );
+  }
+
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-5 px-6 py-6">
-      {offers.map((offer) => (
+      {deals.map((deal) => (
         <OfferCard
-          key={offer.id}
-          {...offer}
-          onAdd={() => onAddOffer(offer)}
-          onSelect={() => onSelectOffer(offer)}
+          key={deal.id}
+          image={deal.image}
+          restaurantLabel={deal.restaurantLabel}
+          title={deal.name}
+          price={deal.comboPrice}
+          onAdd={() => onAddOffer && onAddOffer(deal)}
+          onSelect={() => onSelectOffer && onSelectOffer(deal)}
         />
       ))}
     </div>
   );
 }
 
-export default OffersGrid
+export default OffersGrid;

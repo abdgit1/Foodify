@@ -1,15 +1,9 @@
-import { useState } from "react";
+import ScrollableTabs from "../CommonComponents/ScrollableTabs";
 
-const categories = [
-  "Offers", "Burgers", "Fries", "Snacks", "Salads",
-  "Cold drinks", "Happy Meal®", "Desserts", "Hot drinks", "Sauces", "Orbit®"
-];
-
-function OfferCategoryTabs({ activeCategory, onSelect }) {
+function OfferCategoryTabs({ activeCategory, onSelect, categories = ["Offers"] }) {
   return (
     <div className="w-full px-4 md:px-6 py-3 font-poppins bg-[#f3f3f3]">
-      
-      {/* ══════════════════════ MOBILE VIEWPORT (Dropdown Selection) ══════════════════════ */}
+      {/* Mobile: dropdown scales to any number of categories */}
       <div className="md:hidden w-full relative">
         <label htmlFor="category-select" className="sr-only">
           Select Category
@@ -34,20 +28,17 @@ function OfferCategoryTabs({ activeCategory, onSelect }) {
         </select>
       </div>
 
-      {/* ══════════════════════ DESKTOP VIEWPORT (Full Inline Row Layout) ══════════════════════ */}
-      <div className="hidden md:flex items-center justify-between gap-x-2 gap-y-2 flex-wrap">
-        {categories.map((cat) => (
-          <button
-            key={cat}
-            onClick={() => onSelect(cat)}
-            className={`px-5 py-2.5 rounded-full font-bold text-sm lg:text-base transition-colors cursor-pointer whitespace-nowrap
-              ${activeCategory === cat ? "bg-[#03081f] text-white" : "bg-transparent text-black hover:bg-black/5"}`}
-          >
-            {cat}
-          </button>
-        ))}
-      </div>
-
+      {/* Desktop: scrollable row with arrows when categories overflow */}
+      <ScrollableTabs
+        tabs={categories}
+        activeTab={activeCategory}
+        onSelect={onSelect}
+        variant="filled"
+        ariaLabel="Restaurant menu categories"
+        className="hidden md:block"
+        buttonClassName="font-bold"
+        fadeFrom="#f3f3f3"
+      />
     </div>
   );
 }

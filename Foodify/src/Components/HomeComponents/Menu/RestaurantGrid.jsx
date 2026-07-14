@@ -59,7 +59,7 @@ function RestaurantGrid({ title }) {
                 <RestaurantCard
                   image={r.image}
                   name={r.name}
-                  onClick={() => navigate(`/restaurant/${r.id}`)}
+                  onClick={() => navigate(`/restaurants/${r.id}`)}
                 />
               </div>
             ))}
@@ -72,7 +72,7 @@ function RestaurantGrid({ title }) {
                 key={r.id}
                 image={r.image}
                 name={r.name}
-                onClick={() => navigate(`/restaurant/${r.id}`)}
+                onClick={() => navigate(`/restaurants/${r.id}`)}
               />
             ))}
           </div>

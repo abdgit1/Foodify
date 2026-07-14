@@ -1,38 +1,64 @@
-import React from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useMemo } from "react";
 
-import Card from "./Card";
-import { data } from "/src/utils/dummyData";
+import MenuItemCard from "../HomeComponents/Menu/MenuItemCard";
 
-export default function RestaurantDetail() {
-  const navigate = useNavigate();
+export default function RenderRestaurant({ restaurant }) {
+  const categories = useMemo(() => {
+    const menuItems = restaurant?.menu_items || [];
+    const groups = {};
 
-  const handleAddToCard = (item) => {
-    navigate("/cart");
-  };
+    menuItems.forEach((item) => {
+      const categoryName = item.category?.name || "Other";
+      const categoryId = item.category?.id || "other";
+
+      if (!groups[categoryName]) {
+        groups[categoryName] = {
+          id: categoryId,
+          name: categoryName,
+          items: [],
+        };
+      }
+
+      groups[categoryName].items.push(item);
+    });
+
+    return Object.values(groups);
+  }, [restaurant]);
+
+  if (!restaurant || categories.length === 0) {
+    return (
+      <div className="px-6 py-8 font-body text-black/50">
+        No menu items available for this restaurant.
+      </div>
+    );
+  }
 
   return (
-    <div className="mx-auto space-y-2 lg:px-20 lg:pb-20 px-4 sm:px-6 md:px-12.5">
-      {/* Restaurant Categories With Items */}
-      <div className="space-y-14">
-        {data.map((category) => (
-          <section key={category.id}>
-            <h2 className="mb-6 text-[32px] font-bold text-[#03081F]">
-              {category.name}
-            </h2>
+    <div className="space-y-2 font-body">
+      {categories.map((category) => (
+        <section
+          key={category.id}
+          id={`category-section-${category.name}`}
+          className="px-6 py-8"
+        >
+          <h2 className="text-2xl font-bold mb-1">{category.name}</h2>
+          <p className="text-black/50 text-sm mb-6">
+            {category.items.length} item{category.items.length === 1 ? "" : "s"}
+          </p>
 
-            <div className="grid lg:grid-cols-3 md:grid-cols-2 sm:grid-cols-1 gap-6">
-              {category.items.map((item) => (
-                <Card
-                  key={item.id}
-                  data={item}
-                  onBtnClick={() => handleAddToCard(item)}
-                />
-              ))}
-            </div>
-          </section>
-        ))}
-      </div>
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4 md:gap-5">
+            {category.items.map((item) => (
+              <MenuItemCard
+                key={item.id}
+                image={item.image}
+                name={item.name}
+                price={item.price}
+                restaurantName={restaurant.name}
+              />
+            ))}
+          </div>
+        </section>
+      ))}
     </div>
   );
 }

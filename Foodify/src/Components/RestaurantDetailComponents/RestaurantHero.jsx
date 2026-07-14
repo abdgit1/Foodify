@@ -10,7 +10,8 @@ import reviewImage from "../../assets/Rectangle review.png";
 import Motocross from "../../assets/Motocross.png";
 import OrderComplete from "../../assets/Order Completed.png";
 
-export default function RestaurantHero() {
+
+export default function RestaurantHero({ restaurant }) {
   const { theme } = useTheme();
   const isDark = theme === "dark";
 
@@ -32,7 +33,7 @@ export default function RestaurantHero() {
               DESKTOP VIEW IMAGES (Hidden on Mobile)
           ========================================= */}
           <img
-            src={burgerImage}
+            src={restaurant?.image || burgerImage}
             alt="Burger showcase"
             className="hidden lg:block absolute lg:right-12 top-1/2 -translate-y-1/2 lg:h-80 object-contain z-10 pointer-events-auto"
           />
@@ -77,7 +78,7 @@ export default function RestaurantHero() {
                   isDark ? "text-gray-200 lg:text-white" : "text-gray-700"
                 }`}
               >
-                I'm lovin' it!
+               {restaurant?.description || "Delicious food from your favorite restaurant."}
               </p>
 
               <h1
@@ -85,10 +86,8 @@ export default function RestaurantHero() {
                   isDark ? "text-white" : "text-gray-900"
                 }`}
               >
-                McDonald's East
-                <span className="hidden lg:inline"> <br /> </span>
-                <span className="inline lg:hidden"> </span>
-                London
+                {restaurant?.name || "McDonald's East"}
+                
               </h1>
 
               {/* Info Badges */}

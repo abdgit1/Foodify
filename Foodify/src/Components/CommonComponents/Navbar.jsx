@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Link, NavLink, useNavigate } from "react-router-dom";
 import { HashLink } from "react-router-hash-link";
 import { useDispatch, useSelector } from "react-redux";
@@ -6,30 +6,55 @@ import logo from "../../assets/OrderUKLogo.png";
 import locationIcon from "../../assets/LocationIcon.png";
 import basketIcon from "../../assets/Full Shopping Basket.png";
 import arrowDownIcon from "../../assets/Forward Button.png";
-import { Menu, LogOut } from "lucide-react";
+import { Menu, LogOut, ChevronDown, Store, Loader2 } from "lucide-react";
 import ThemeToggle from "./ThemeToggle";
 import { useAuthModal } from "../../context/AuthModalContext";
 import { logout } from "../../features/authSlice";
+import { getAllRestaurants } from "../../services/restaurantservices";
 
 const navLinks = [
   { label: "Home", path: "/" },
   { label: "Browse Menu", path: "/#menu" },
   { label: "Special Offers", path: "/offers" },
-  { label: "Restaurants", path: "/restaurants" },
+  { label: "Restaurants", path: "/restaurants", hasDropdown: true },
   { label: "Track Order", path: "/orders/track" },
 ];
 
 const Navbar = () => {
   const [menuOpen, setMenuOpen] = useState(false);
+  const [restaurantDropdownOpen, setRestaurantDropdownOpen] = useState(false);
+  const [mobileRestaurantsOpen, setMobileRestaurantsOpen] = useState(false);
+  const [restaurants, setRestaurants] = useState([]);
+  const [restaurantsLoading, setRestaurantsLoading] = useState(false);
+  const dropdownRef = useRef(null);
   const { openLogin } = useAuthModal();
 
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
-  // Reading auth state from the whiteboard — this is what makes the
-  // Navbar automatically update the instant someone logs in or out,
-  // with zero manual wiring beyond this one line.
   const { user, isAuthenticated } = useSelector((state) => state.auth);
+
+  // Fetch restaurants once on mount for the dropdown
+  useEffect(() => {
+    let cancelled = false;
+    setRestaurantsLoading(true);
+    getAllRestaurants()
+      .then((data) => { if (!cancelled) setRestaurants(data); })
+      .catch(() => { if (!cancelled) setRestaurants([]); })
+      .finally(() => { if (!cancelled) setRestaurantsLoading(false); });
+    return () => { cancelled = true; };
+  }, []);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
+        setRestaurantDropdownOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   const handleLogout = () => {
     dispatch(logout());
@@ -38,7 +63,7 @@ const Navbar = () => {
 
   return (
     <div>
-      {/* ══════════════════════ DESKTOP (unchanged) ══════════════════════ */}
+      {/* ══════════════════════ DESKTOP ══════════════════════ */}
       <div className="hidden lg:block">
         {/* ── Top promo / utility strip ─────────────────────────── */}
         <div
@@ -124,17 +149,86 @@ const Navbar = () => {
             </Link>
 
             <nav className="flex items-center gap-8 font-nav text-sm font-semibold">
-              {navLinks.map((link) =>
-                link.label === "Browse Menu" ? (
-                  <HashLink
-                    key={link.label}
-                    smooth
-                    to="/#menu"
-                    className="w-[127px] h-[45px] text-brand-dark hover:text-brand-orange flex items-center justify-center transition-colors duration-200"
-                  >
-                    {link.label}
-                  </HashLink>
-                ) : (
+              {navLinks.map((link) => {
+                if (link.label === "Browse Menu") {
+                  return (
+                    <HashLink
+                      key={link.label}
+                      smooth
+                      to="/#menu"
+                      className="w-[127px] h-[45px] text-brand-dark hover:text-brand-orange flex items-center justify-center transition-colors duration-200"
+                    >
+                      {link.label}
+                    </HashLink>
+                  );
+                }
+
+                if (link.hasDropdown) {
+                  return (
+                    <div key={link.label} className="relative" ref={dropdownRef}>
+                      <button
+                        onClick={() => setRestaurantDropdownOpen((o) => !o)}
+                        className="w-[127px] h-[45px] text-brand-dark hover:text-brand-orange flex items-center justify-center gap-1.5 transition-colors duration-200"
+                      >
+                        {link.label}
+                        <ChevronDown
+                          size={14}
+                          className={`transition-transform duration-200 ${restaurantDropdownOpen ? "rotate-180" : ""}`}
+                        />
+                      </button>
+
+                      {/* Dropdown panel */}
+                      {restaurantDropdownOpen && (
+                        <div className="absolute top-[calc(100%+8px)] left-1/2 -translate-x-1/2 w-[260px] bg-white dark:bg-[#0a0f2e] rounded-[14px] shadow-[0px_8px_30px_0px_rgba(0,0,0,0.12)] border border-black/5 dark:border-white/10 overflow-hidden z-50">
+                          <div className="px-4 py-3 border-b border-black/5 dark:border-white/10">
+                            <p className="text-[11px] font-bold text-black/40 dark:text-white/40 uppercase tracking-wider">
+                              All Restaurants
+                            </p>
+                          </div>
+
+                          <div className="max-h-[320px] overflow-y-auto py-2">
+                            {restaurantsLoading ? (
+                              <div className="flex items-center justify-center gap-2 py-6 text-black/40 dark:text-white/40 text-[13px]">
+                                <Loader2 size={15} className="animate-spin" />
+                                Loading…
+                              </div>
+                            ) : restaurants.length === 0 ? (
+                              <p className="text-[13px] text-black/40 dark:text-white/40 px-4 py-5 text-center">
+                                No restaurants found.
+                              </p>
+                            ) : (
+                              restaurants.map((r) => (
+                                <Link
+                                  key={r.id}
+                                  to={`/restaurants/${r.id}`}
+                                  onClick={() => setRestaurantDropdownOpen(false)}
+                                  className="flex items-center gap-3 px-4 py-3 hover:bg-black/5 dark:hover:bg-white/5 transition-colors"
+                                >
+                                  {r.image ? (
+                                    <img
+                                      src={r.image}
+                                      alt={r.name}
+                                      className="w-[38px] h-[38px] rounded-lg object-cover shrink-0"
+                                    />
+                                  ) : (
+                                    <div className="w-[38px] h-[38px] rounded-lg bg-black/5 dark:bg-white/10 flex items-center justify-center shrink-0">
+                                      <Store size={16} className="text-black/30 dark:text-white/30" />
+                                    </div>
+                                  )}
+                                  <span className="text-[14px] font-medium text-[#03081F] dark:text-white truncate">
+                                    {r.name}
+                                  </span>
+                                </Link>
+                              ))
+                            )}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  );
+                }
+
+                return (
                   <NavLink
                     key={link.label}
                     to={link.path}
@@ -147,15 +241,14 @@ const Navbar = () => {
                   >
                     {link.label}
                   </NavLink>
-                )
-              )}
+                );
+              })}
             </nav>
 
             <div className="flex items-center gap-4">
               <ThemeToggle />
 
               {isAuthenticated ? (
-                /* Logged in — show name + logout instead of Login/Signup */
                 <div className="flex items-center gap-3">
                   <div className="flex items-center gap-2 pl-2">
                     <div className="w-[36px] h-[36px] bg-brand-orange rounded-full flex items-center justify-center text-white font-bold text-[14px]">
@@ -175,22 +268,16 @@ const Navbar = () => {
                   </button>
                 </div>
               ) : (
-                /* Was: <Link to="/login">. Now opens the AuthModal instead of navigating. */
                 <button
                   type="button"
                   onClick={openLogin}
                   className="w-[234px] h-[61px] bg-brand-dark text-white rounded-pill flex items-center justify-center gap-3 font-nav text-sm font-semibold hover:opacity-90 transition-opacity"
                 >
                   <div className="w-[30px] h-[30px] bg-brand-orange rounded-full flex items-center justify-center">
-                    <svg
-                      className="w-4 h-4 text-white"
-                      fill="currentColor"
-                      viewBox="0 0 24 24"
-                    >
+                    <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 24 24">
                       <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5-4-8-4z" />
                     </svg>
                   </div>
-
                   <span>Login/Signup</span>
                 </button>
               )}
@@ -199,7 +286,7 @@ const Navbar = () => {
         </div>
       </div>
 
-      {/* ══════════════════════ MOBILE (Modified Segment Layer) ══════════════════════ */}
+      {/* ══════════════════════ MOBILE ══════════════════════ */}
       <div className="lg:hidden w-full relative">
         {/* Row 1: Logo + Theme Toggle + Hamburger */}
         <div className="flex items-center justify-between px-4 pt-[27px] pb-[18px]">
@@ -214,7 +301,7 @@ const Navbar = () => {
           </div>
         </div>
 
-        {/* Row 2: Promo/basket bar — Login action opens AuthModal, or shows user when logged in */}
+        {/* Row 2: Login/User bar */}
         <div className="w-full h-[77px] flex items-center">
           {isAuthenticated ? (
             <div className="flex-1 h-full bg-brand-orange flex items-center justify-between px-5">
@@ -236,18 +323,13 @@ const Navbar = () => {
               </button>
             </div>
           ) : (
-            /* Was: <Link to="/login">. Now opens the AuthModal instead of navigating. */
             <button
               type="button"
               onClick={openLogin}
               className="flex-1 h-full bg-brand-orange flex items-center gap-3 px-5 hover:bg-brand-orange/90 transition-colors"
             >
               <div className="w-[34px] h-[34px] bg-brand-dark rounded-full flex items-center justify-center shrink-0">
-                <svg
-                  className="w-4 h-4 text-white"
-                  fill="currentColor"
-                  viewBox="0 0 24 24"
-                >
+                <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 24 24">
                   <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5-4-8-4z" />
                 </svg>
               </div>
@@ -257,7 +339,7 @@ const Navbar = () => {
             </button>
           )}
 
-          {/* Green segment — basket icon + price */}
+          {/* Green segment */}
           <div className="flex items-center bg-brand-green h-full w-[220px] justify-center gap-2 shrink-0">
             <img src={basketIcon} alt="Basket" className="w-[38px] h-[38px] object-contain" />
             <span className="text-white font-semibold text-[16px]">GBP 79.89</span>
@@ -272,52 +354,105 @@ const Navbar = () => {
 
         {/* Mobile dropdown menu */}
         {menuOpen && (
-          <div className="w-full px-4 py-4 flex flex-col gap-4 bg-white border-b border-black/10">
-            {navLinks.map((link) =>
-              link.label === "Browse Menu" ? (
-                <HashLink
-                  key={link.label}
-                  smooth
-                  to="/#menu"
-                  onClick={() => setMenuOpen(false)}
-                  className="text-brand-dark font-medium"
-                >
-                  {link.label}
-                </HashLink>
-              ) : (
+          <div className="w-full px-4 py-4 flex flex-col gap-4 bg-white dark:bg-[#0a0f2e] border-b border-black/10 dark:border-white/10">
+            {navLinks.map((link) => {
+              if (link.label === "Browse Menu") {
+                return (
+                  <HashLink
+                    key={link.label}
+                    smooth
+                    to="/#menu"
+                    onClick={() => setMenuOpen(false)}
+                    className="text-brand-dark dark:text-white font-medium"
+                  >
+                    {link.label}
+                  </HashLink>
+                );
+              }
+
+              if (link.hasDropdown) {
+                return (
+                  <div key={link.label}>
+                    <button
+                      onClick={() => setMobileRestaurantsOpen((o) => !o)}
+                      className="flex items-center justify-between w-full text-brand-dark dark:text-white font-medium"
+                    >
+                      <span>{link.label}</span>
+                      <ChevronDown
+                        size={16}
+                        className={`transition-transform duration-200 ${mobileRestaurantsOpen ? "rotate-180" : ""}`}
+                      />
+                    </button>
+
+                    {mobileRestaurantsOpen && (
+                      <div className="mt-2 pl-3 border-l-2 border-brand-orange flex flex-col gap-1">
+                        {restaurantsLoading ? (
+                          <div className="flex items-center gap-2 py-2 text-black/40 dark:text-white/40 text-[13px]">
+                            <Loader2 size={13} className="animate-spin" />
+                            Loading…
+                          </div>
+                        ) : restaurants.length === 0 ? (
+                          <p className="text-[13px] text-black/40 dark:text-white/40 py-2">
+                            No restaurants found.
+                          </p>
+                        ) : (
+                          restaurants.map((r) => (
+                            <Link
+                              key={r.id}
+                              to={`/restaurants/${r.id}`}
+                              onClick={() => { setMenuOpen(false); setMobileRestaurantsOpen(false); }}
+                              className="flex items-center gap-2 py-2 text-[14px] text-[#03081F] dark:text-white hover:text-brand-orange transition-colors"
+                            >
+                              {r.image ? (
+                                <img
+                                  src={r.image}
+                                  alt={r.name}
+                                  className="w-[28px] h-[28px] rounded-md object-cover shrink-0"
+                                />
+                              ) : (
+                                <div className="w-[28px] h-[28px] rounded-md bg-black/5 dark:bg-white/10 flex items-center justify-center shrink-0">
+                                  <Store size={13} className="text-black/30 dark:text-white/30" />
+                                </div>
+                              )}
+                              {r.name}
+                            </Link>
+                          ))
+                        )}
+                      </div>
+                    )}
+                  </div>
+                );
+              }
+
+              return (
                 <NavLink
                   key={link.label}
                   to={link.path}
                   end={link.path === "/"}
                   onClick={() => setMenuOpen(false)}
                   className={({ isActive }) =>
-                    isActive ? "text-brand-orange font-semibold" : "text-brand-dark font-medium"
+                    isActive
+                      ? "text-brand-orange font-semibold"
+                      : "text-brand-dark dark:text-white font-medium"
                   }
                 >
                   {link.label}
                 </NavLink>
-              )
-            )}
+              );
+            })}
 
             {isAuthenticated ? (
               <button
                 type="button"
-                onClick={() => {
-                  setMenuOpen(false);
-                  handleLogout();
-                }}
+                onClick={() => { setMenuOpen(false); handleLogout(); }}
                 className="text-red-500 font-semibold text-left"
               >
                 Log Out
               </button>
             ) : (
-              /* Was: <Link to="/login">. Now opens the AuthModal instead of navigating. */
               <button
                 type="button"
-                onClick={() => {
-                  setMenuOpen(false);
-                  openLogin();
-                }}
+                onClick={() => { setMenuOpen(false); openLogin(); }}
                 className="text-brand-orange font-semibold text-left"
               >
                 Login/Signup

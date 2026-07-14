@@ -81,7 +81,7 @@ const CategoryDetail = () => {
               name={item.name}
               price={item.price}
               restaurantName={item.restaurant.name}
-              onClick={() => navigate(`/restaurant/${item.restaurant.id}`)}
+              onClick={() => navigate(`/restaurants/${item.restaurant.id}`)}
             />
           ))}
         </div>
