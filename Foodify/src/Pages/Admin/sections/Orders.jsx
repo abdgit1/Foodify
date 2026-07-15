@@ -1,7 +1,7 @@
-import { useState } from 'react';
-import { Search, Filter, ChevronDown } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { Search, Filter } from 'lucide-react';
 import StatusBadge from '../../../Components/AdminComponents/StatusBadge';
-import { mockOrders } from '../mockData';
+import { getAllOrders, updateOrderStatus } from '../../../services/adminService';
 
 const ALL_STATUSES = ['all', 'pending', 'accepted', 'preparing', 'out_for_delivery', 'delivered', 'cancelled'];
 const NEXT_STATUS = {
@@ -11,40 +11,78 @@ const NEXT_STATUS = {
   out_for_delivery: 'delivered',
 };
 
+// The real API doesn't return a top-level `user` on each order — the
+// customer who placed it is only identifiable via the first status_history
+// entry's `changed_by` (whoever triggered the initial "pending" status).
+function getCustomer(order) {
+  return order.user ?? order.status_history?.[0]?.changed_by ?? null;
+}
+
 export default function Orders() {
-  const [orders, setOrders] = useState(mockOrders);
+  const [orders, setOrders] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState(null);
   const [search, setSearch] = useState('');
   const [filterStatus, setFilterStatus] = useState('all');
   const [updatingId, setUpdatingId] = useState(null);
 
+  useEffect(() => {
+    let isCancelled = false;
+
+    const loadOrders = async () => {
+      setLoading(true);
+      setLoadError(null);
+      try {
+        const data = await getAllOrders();
+        if (!isCancelled) setOrders(data || []);
+      } catch (err) {
+        if (!isCancelled) setLoadError(err.message);
+      } finally {
+        if (!isCancelled) setLoading(false);
+      }
+    };
+
+    loadOrders();
+
+    return () => {
+      isCancelled = true;
+    };
+  }, []);
+
   // Filter
   const filtered = orders.filter(o => {
+    const customer = getCustomer(o);
     const matchSearch =
       String(o.order_id).includes(search) ||
-      o.user?.username?.toLowerCase().includes(search.toLowerCase()) ||
+      customer?.username?.toLowerCase().includes(search.toLowerCase()) ||
       o.restaurant.name.toLowerCase().includes(search.toLowerCase());
     const matchStatus = filterStatus === 'all' || o.current_status === filterStatus;
     return matchSearch && matchStatus;
   });
 
-  // Simulate status update (PATCH /order/admin/orders/:id/status/)
-  const handleStatusUpdate = (orderId, newStatus) => {
+  // PATCH /order/admin/orders/:id/status/ — optimistic, rolls back on failure.
+  const handleStatusUpdate = async (orderId, newStatus) => {
+    const previousOrders = orders;
     setUpdatingId(orderId);
-    setTimeout(() => {
-      setOrders(prev => prev.map(o => o.order_id === orderId ? { ...o, current_status: newStatus } : o));
+    setOrders(prev => prev.map(o => o.order_id === orderId ? { ...o, current_status: newStatus } : o));
+    try {
+      await updateOrderStatus(orderId, newStatus);
+    } catch (err) {
+      setOrders(previousOrders);
+      alert(`Couldn't update order #${orderId}: ${err.message}`);
+    } finally {
       setUpdatingId(null);
-    }, 600);
+    }
   };
 
   return (
     <div className="p-6 space-y-5">
 
-      {/* API hint banner */}
-      <div className="bg-[#fc8a06]/5 border border-[#fc8a06]/20 rounded-xl px-4 py-3 text-[12px] text-[#fc8a06]">
-        <span className="font-semibold">API Integration:</span> Replace mock data with{' '}
-        <code className="bg-[#fc8a06]/10 px-1 rounded">GET /order/admin/orders</code> ·{' '}
-        Update status via <code className="bg-[#fc8a06]/10 px-1 rounded">PATCH /order/admin/orders/:id/status/</code>
-      </div>
+      {loadError && (
+        <div className="bg-red-500/5 border border-red-500/20 rounded-xl px-4 py-3 text-[12px] text-red-500">
+          Couldn't load orders right now. ({loadError})
+        </div>
+      )}
 
       {/* Search + filter bar */}
       <div className="flex flex-col sm:flex-row gap-3">
@@ -108,20 +146,26 @@ export default function Orders() {
               </tr>
             </thead>
             <tbody>
-              {filtered.length === 0 && (
+              {loading && (
+                <tr>
+                  <td colSpan="9" className="text-center py-10 text-black/30 dark:text-white/30 text-[13px]">Loading orders…</td>
+                </tr>
+              )}
+              {!loading && filtered.length === 0 && (
                 <tr>
                   <td colSpan="9" className="text-center py-10 text-black/30 dark:text-white/30 text-[13px]">No orders found.</td>
                 </tr>
               )}
-              {filtered.map((order) => {
+              {!loading && filtered.map((order) => {
                 const nextStatus = NEXT_STATUS[order.current_status];
                 const isUpdating = updatingId === order.order_id;
+                const customer = getCustomer(order);
                 return (
                   <tr key={order.order_id} className="border-b border-black/3 dark:border-white/3 hover:bg-[#fc8a06]/2 transition-colors">
                     <td className="px-4 py-3.5 font-bold text-[#fc8a06] whitespace-nowrap">#{order.order_id}</td>
                     <td className="px-4 py-3.5">
-                      <p className="font-medium text-[#03081F] dark:text-white">{order.user?.username}</p>
-                      <p className="text-[11px] text-black/40 dark:text-white/40">{order.user?.email}</p>
+                      <p className="font-medium text-[#03081F] dark:text-white">{customer?.username ?? '—'}</p>
+                      <p className="text-[11px] text-black/40 dark:text-white/40">{customer?.email}</p>
                     </td>
                     <td className="px-4 py-3.5 text-black/70 dark:text-white/70 whitespace-nowrap">{order.restaurant.name}</td>
                     <td className="px-4 py-3.5 text-black/60 dark:text-white/60">
