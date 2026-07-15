@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import MenuItemCard from '../../Components/HomeComponents/Menu/MenuItemCard';
+import MenuItemCard from '../../Components/HomeComponents/Menu/MenuitemCard';
 import { getAllMenuItems } from '../../services/menuItemService';
 import Navbar from '../../Components/CommonComponents/Navbar';
 import Footer from '../../Components/CommonComponents/Footer';
@@ -47,47 +47,48 @@ const CategoryDetail = () => {
 
   return (
     <div>
-          <Navbar />
+      <Navbar />
 
-    <section className="px-6 py-8">
-    
-      <h2 className="text-2xl font-bold mb-1">
-        {categoryName ? `${categoryName} Menu Items` : 'Menu Items'}
-      </h2>
-      <p className="text-black/50 text-sm mb-6">
-        {items.length} item{items.length === 1 ? '' : 's'} across all restaurants
-      </p>
+      <section className="px-6 py-8">
 
-      {loading && (
-        <p className="text-black/50 text-[15px]">Loading menu items…</p>
-      )}
-
-      {error && (
-        <p className="text-red-500 text-[15px]">
-          Couldn't load menu items right now. ({error})
+        <h2 className="text-2xl font-bold mb-1">
+          {categoryName ? `${categoryName} Menu Items` : 'Menu Items'}
+        </h2>
+        <p className="text-black/50 text-sm mb-6">
+          {items.length} item{items.length === 1 ? '' : 's'} across all restaurants
         </p>
-      )}
 
-      {!loading && !error && items.length === 0 && (
-        <p className="text-black/50 text-[15px]">No menu items found in this category.</p>
-      )}
+        {loading && (
+          <p className="text-black/50 text-[15px]">Loading menu items…</p>
+        )}
 
-      {!loading && !error && items.length > 0 && (
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4 md:gap-5">
-          {items.map((item) => (
-            <MenuItemCard
-              key={item.id}
-              image={item.image}
-              name={item.name}
-              price={item.price}
-              restaurantName={item.restaurant.name}
-              onClick={() => navigate(`/restaurants/${item.restaurant.id}`)}
-            />
-          ))}
-        </div>
-      )}
-    </section>
-    <Footer />
+        {error && (
+          <p className="text-red-500 text-[15px]">
+            Couldn't load menu items right now. ({error})
+          </p>
+        )}
+
+        {!loading && !error && items.length === 0 && (
+          <p className="text-black/50 text-[15px]">No menu items found in this category.</p>
+        )}
+
+        {!loading && !error && items.length > 0 && (
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4 md:gap-5">
+            {items.map((item) => (
+              <MenuItemCard
+                key={item.id}
+                id={item.id}
+                image={item.image}
+                name={item.name}
+                price={item.price}
+                restaurantName={item.restaurant.name}
+                onClick={() => navigate(`/restaurants/${item.restaurant.id}`)}
+              />
+            ))}
+          </div>
+        )}
+      </section>
+      <Footer />
     </div>
   );
 };

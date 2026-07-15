@@ -1,12 +1,36 @@
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ShoppingCart } from 'lucide-react';
+import { ShoppingCart, Loader2 } from 'lucide-react';
+import { addToCart } from '../../../services/cartService';
+import { useSelector } from 'react-redux';
+import { useAuthModal } from '../../../context/AuthModalContext';
 
-function MenuItemCard({ image, name, price, restaurantName, onClick }) {
+
+function MenuItemCard({ id, image, name, price, restaurantName, onClick }) {
   const navigate = useNavigate();
+  const { isAuthenticated } = useSelector((state) => state.auth);
+  const { openLogin } = useAuthModal();
 
-  const handleAddToCart = (e) => {
+  const [adding, setAdding] = useState(false);
+
+  const handleAddToCart = async (e) => {
     e.stopPropagation(); // don't also trigger the card's own onClick (navigation)
-    navigate('/cart');
+    if (adding) return;
+
+    if (!isAuthenticated) {
+      openLogin();
+      return;
+    }
+
+    setAdding(true);
+    try {
+      await addToCart({ menuItemId: id });
+      navigate('/cart');
+    } catch (err) {
+      alert(`Couldn't add "${name}" to your cart: ${err.message}`);
+    } finally {
+      setAdding(false);
+    }
   };
 
   return (
@@ -33,10 +57,11 @@ function MenuItemCard({ image, name, price, restaurantName, onClick }) {
             <button
               type="button"
               onClick={handleAddToCart}
+              disabled={adding}
               aria-label={`Add ${name} to cart`}
-              className="w-[32px] h-[32px] flex items-center justify-center rounded-full bg-brand-orange text-white hover:bg-[#e07a00] active:scale-95 transition-all"
+              className="w-[32px] h-[32px] flex items-center justify-center rounded-full bg-brand-orange text-white hover:bg-[#e07a00] active:scale-95 transition-all disabled:opacity-60"
             >
-              <ShoppingCart size={15} />
+              {adding ? <Loader2 size={15} className="animate-spin" /> : <ShoppingCart size={15} />}
             </button>
           </div>
         </div>

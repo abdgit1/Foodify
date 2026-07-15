@@ -1,6 +1,6 @@
 import React, { useMemo } from "react";
 
-import MenuItemCard from "../HomeComponents/Menu/MenuItemCard";
+import MenuItemCard from "../HomeComponents/Menu/MenuitemCard";
 
 export default function RenderRestaurant({ restaurant }) {
   const categories = useMemo(() => {
@@ -50,6 +50,7 @@ export default function RenderRestaurant({ restaurant }) {
             {category.items.map((item) => (
               <MenuItemCard
                 key={item.id}
+                id={item.id}
                 image={item.image}
                 name={item.name}
                 price={item.price}

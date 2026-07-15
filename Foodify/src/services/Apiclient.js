@@ -11,21 +11,40 @@ apiClient.interceptors.request.use((config) => {
 });
 
 // Pulls a clean, human-readable message out of whatever shape the backend
-// sent back. This backend has shown at least three different error shapes:
-//   { "error": "User not Found" }                        ← a single top-level string
-//   { "email": ["user with this email already exists."] } ← DRF field errors, array
-//   { "email": "user with this email already exists." }   ← DRF field errors, plain string
+// sent back. This backend has shown at least these shapes, and mixes them:
+//   { "error": "User not Found" }                          ← a single top-level string
+//   { "detail": "Authentication credentials were not provided." } ← DRF auth errors
+//   { "error": { "detail": "..." } }                        ← DRF auth error, nested under "error"
+//   { "email": ["user with this email already exists."] }   ← DRF field errors, array
+//   { "email": "user with this email already exists." }     ← DRF field errors, plain string
 function extractErrorMessage(data) {
   if (!data) return null;
   if (typeof data === 'string') return data;
-  if (data.error) return data.error;
-  if (data.message) return data.message;
 
-  // Field-level validation shape — value can be either a string or an array of strings.
-  // Grab the first field that has *something* in it, either way.
-  for (const value of Object.values(data)) {
-    if (typeof value === 'string' && value.trim()) return value;
-    if (Array.isArray(value) && value.length > 0) return value[0];
+  if (Array.isArray(data)) {
+    for (const item of data) {
+      const found = extractErrorMessage(item);
+      if (found) return found;
+    }
+    return null;
+  }
+
+  if (typeof data === 'object') {
+    // Prefer these keys, but recurse into them — the value behind any of
+    // them might itself be a nested shape rather than a plain string.
+    for (const key of ['detail', 'error', 'message']) {
+      if (key in data) {
+        const found = extractErrorMessage(data[key]);
+        if (found) return found;
+      }
+    }
+
+    // Field-level validation shape — grab the first field that has
+    // *something* in it, whatever shape that turns out to be.
+    for (const value of Object.values(data)) {
+      const found = extractErrorMessage(value);
+      if (found) return found;
+    }
   }
 
   return null;

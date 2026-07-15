@@ -1,35 +1,94 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useSelector } from "react-redux";
 import Checkout from "../../Components/Cart/checkout";
+import {
+  getCart,
+  updateCartItemQuantity,
+  removeCartItem,
+} from "../../services/cartService";
+import { useAuthModal } from "../../context/AuthModalContext";
 
-const MOCK_CART_ITEMS = [
-  {
-    id: 1,
-    title: "Royal Cheese Burger",
-    description: "Juicy beef patty, cheddar cheese, pickles, mustard, and ketchup.",
-    price: 550,
-    quantity: 2,
-    image: "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?auto=format&fit=crop&w=150&h=150&q=80"
-  },
-  {
-    id: 2,
-    title: "Cold Coca Cola",
-    description: "Chilled 330ml can.",
-    price: 120,
-    quantity: 1,
-    image: "https://images.unsplash.com/photo-1622483767028-3f66f32aef97?auto=format&fit=crop&w=150&h=150&q=80"
-  }
-];
+// Maps the backend cart item shape to what <Checkout> expects.
+function toCheckoutItem(item) {
+  return {
+    id: item.id,
+    title: item.name,
+    description: item.restaurant,
+    price: item.price,
+    quantity: item.quantity,
+    image: item.image,
+  };
+}
 
 export default function Cart() {
-  const [cartItems, setCartItems] = useState(MOCK_CART_ITEMS);
+  const { isAuthenticated } = useSelector((state) => state.auth);
+  const { openLogin } = useAuthModal();
+
+  const [cartItems, setCartItems] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [loadError, setLoadError] = useState(null);
   const navigate = useNavigate();
 
+  useEffect(() => {
+    if (!isAuthenticated) return;
+
+    let isCancelled = false;
+
+    const loadCart = async () => {
+      setLoading(true);
+      setLoadError(null);
+      try {
+        const cart = await getCart();
+        if (!isCancelled) setCartItems(cart.items.map(toCheckoutItem));
+      } catch (err) {
+        if (!isCancelled) setLoadError(err.message);
+      } finally {
+        if (!isCancelled) setLoading(false);
+      }
+    };
+
+    loadCart();
+
+    return () => {
+      isCancelled = true;
+    };
+  }, [isAuthenticated]);
+
+  // Shared helper: optimistically apply `updater`, call the backend, and
+  // roll back + surface an alert if the request fails.
+  const mutateItem = async (id, updater, request) => {
+    const previousItems = cartItems;
+    setCartItems((items) =>
+      items.map((item) => (item.id === id ? updater(item) : item))
+    );
+    try {
+      await request();
+    } catch (err) {
+      setCartItems(previousItems);
+      alert(`Couldn't update your cart: ${err.message}`);
+    }
+  };
+
+  const handleRemove = async (id) => {
+    const previousItems = cartItems;
+    setCartItems((items) => items.filter((item) => item.id !== id));
+    try {
+      await removeCartItem(id);
+    } catch (err) {
+      setCartItems(previousItems);
+      alert(`Couldn't remove item: ${err.message}`);
+    }
+  };
+
   const handleIncrease = (id) => {
-    setCartItems(
-      cartItems.map((item) =>
-        item.id === id ? { ...item, quantity: item.quantity + 1 } : item
-      )
+    const target = cartItems.find((item) => item.id === id);
+    if (!target) return;
+    const newQuantity = target.quantity + 1;
+    mutateItem(
+      id,
+      (item) => ({ ...item, quantity: newQuantity }),
+      () => updateCartItemQuantity(id, newQuantity)
     );
   };
 
@@ -37,24 +96,58 @@ export default function Cart() {
     const target = cartItems.find((item) => item.id === id);
     if (!target) return;
 
-    if (target.quantity > 1) {
-      setCartItems(
-        cartItems.map((item) =>
-          item.id === id ? { ...item, quantity: item.quantity - 1 } : item
-        )
-      );
-    } else {
+    if (target.quantity <= 1) {
       handleRemove(id);
+      return;
     }
-  };
 
-  const handleRemove = (id) => {
-    setCartItems(cartItems.filter((item) => item.id !== id));
+    const newQuantity = target.quantity - 1;
+    mutateItem(
+      id,
+      (item) => ({ ...item, quantity: newQuantity }),
+      () => updateCartItemQuantity(id, newQuantity)
+    );
   };
 
   const handleConfirm = () => {
     navigate("/checkout");
   };
+
+  if (!isAuthenticated) {
+    return (
+      <div className="w-full min-h-[70vh] flex flex-col items-center justify-center gap-4 bg-white dark:bg-brand-dark px-4">
+        <p className="text-black/60 dark:text-white/60 text-[15px] text-center">
+          Log in to see what's in your cart.
+        </p>
+        <button
+          onClick={openLogin}
+          className="h-[46px] px-8 rounded-full bg-[#fc8a06] text-white font-bold text-[14px] hover:bg-[#e07a00] transition-all"
+        >
+          Log In
+        </button>
+      </div>
+    );
+  }
+
+  if (loading) {
+    return (
+      <div className="w-full min-h-[70vh] flex items-center justify-center bg-white dark:bg-brand-dark">
+        <p className="text-black/50 dark:text-white/50 text-[15px]">
+          Loading your cart…
+        </p>
+      </div>
+    );
+  }
+
+  if (loadError) {
+    return (
+      <div className="w-full min-h-[70vh] flex items-center justify-center bg-white dark:bg-brand-dark">
+        <p className="text-red-500 text-[15px]">
+          Couldn't load your cart right now. ({loadError})
+        </p>
+      </div>
+    );
+  }
 
   return (
     <Checkout
