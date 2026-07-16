@@ -1,12 +1,14 @@
-import { useState } from 'react';
+import { useState,useEffect } from 'react';
 import { Plus, Pencil, Trash2, Search, Star, CheckCircle, XCircle, Store } from 'lucide-react';
 import SlideOverPanel from '../../../Components/AdminComponents/SlideOverPanel';
 import ConfirmModal from '../../../Components/AdminComponents/ConfirmModal';
 import { mockRestaurants } from '../mockData';
 
-const EMPTY_FORM = { name: '', description: '', address: '', is_featured: false, is_active: true };
+import { getAllRestaurants,getRestaurantById , createRestaurant ,updateRestaurant ,deleteRestaurant} from '../../../services/restaurantservices';
 
-function RestaurantForm({ form, setForm, onSubmit, submitLabel }) {
+const EMPTY_FORM = { name: '', description: '', address: '', image: null, is_featured: false, is_active: true };
+
+function RestaurantForm({ form, setForm, imagePreview, onImageChange, onSubmit, submitLabel }) {
   return (
     <form onSubmit={onSubmit} className="flex flex-col gap-5">
       <p className="text-[11px] text-black/40 dark:text-white/40 bg-black/3 dark:bg-white/5 rounded-lg px-3 py-2">
@@ -28,6 +30,8 @@ function RestaurantForm({ form, setForm, onSubmit, submitLabel }) {
           />
         </div>
       ))}
+
+
       <div className="flex flex-col gap-1.5">
         <label className="text-[13px] font-semibold text-[#03081F] dark:text-white">Description</label>
         <textarea
@@ -38,6 +42,30 @@ function RestaurantForm({ form, setForm, onSubmit, submitLabel }) {
           className="w-full rounded-xl border border-black/10 dark:border-white/10 bg-white dark:bg-white/5 px-4 py-3 text-[14px] text-black dark:text-white placeholder-black/30 dark:placeholder-white/30 outline-none focus:border-[#fc8a06] transition-colors resize-none"
         />
       </div>
+      <div className="flex flex-col gap-1.5">
+          <label className="text-[13px] font-semibold text-[#03081F] dark:text-white">
+    Restaurant Image
+  </label>
+          {/* Preview — the file input itself can never show an EXISTING image
+              (browsers block that for security). This <img> is a separate,
+              independent piece of UI driven by imagePreview state, not by
+              the file input's own value. */}
+          {imagePreview && (
+            <img
+              src={imagePreview}
+              alt="Preview"
+              className="w-[80px] h-[80px] rounded-xl object-cover border border-black/10 dark:border-white/10"
+            />
+          )}
+          <input
+            type="file"
+            accept="image/*"
+            onChange={onImageChange}
+         className="w-full rounded-xl border border-black/10 dark:border-white/10 bg-white dark:bg-white/5 px-4 py-3 text-[14px] text-black dark:text-white file:mr-4 file:rounded-lg file:border-0 file:bg-[#fc8a06] file:px-3 file:py-2 file:text-white file:cursor-pointer"
+  />
+</div>
+
+      
       <div className="flex gap-4">
         {[{ key: 'is_featured', label: 'Featured' }, { key: 'is_active', label: 'Active' }].map(({ key, label }) => (
           <label key={key} className="flex items-center gap-2 cursor-pointer">
@@ -62,34 +90,120 @@ function RestaurantForm({ form, setForm, onSubmit, submitLabel }) {
 }
 
 export default function Restaurants() {
-  const [restaurants, setRestaurants] = useState(mockRestaurants);
+  const [restaurants, setRestaurants] = useState([]);
   const [search, setSearch] = useState('');
   const [panelOpen, setPanelOpen] = useState(false);
   const [editTarget, setEditTarget] = useState(null);
   const [form, setForm] = useState(EMPTY_FORM);
+  const [imagePreview, setImagePreview] = useState(null);
   const [deleteTarget, setDeleteTarget] = useState(null);
 
+  const fetchRestaurants = async () => {
+    try {
+      const data = await getAllRestaurants();
+      setRestaurants(data);
+    } catch (error) {
+      console.error('Error fetching restaurants:', error);
+    }
+  };
+
+  useEffect(() => {
+    fetchRestaurants();
+  }, []);
+
+  const fetchRestaurantDetails = async (id) => {
+    try {
+      const restaurant = await getRestaurantById(id);
+      console.log('Fetched restaurant details:', restaurant);
+      return restaurant;
+    }
+    catch (error) {
+      console.error('Error fetching restaurant details:', error);
+    }
+  };
+
+  const addRestaurant = async (payload) => {
+    try {
+      const newRestaurant = await createRestaurant(payload);
+      setRestaurants(prev => [...prev, newRestaurant]);
+    }
+    catch (error) {
+      console.error('Error creating restaurant:', error);
+    }
+  };
+
+  const handleupdateRestaurant = async (id, payload) => {
+    try {
+      const updatedRestaurant = await updateRestaurant(id, payload);
+      setRestaurants(prev => prev.map(r => r.id === id ? updatedRestaurant : r));
+    }
+    catch (error) {
+      console.error('Error updating restaurant:', error);
+    }
+  };
+
+  const handledeleteRestaurant = async (id) => {
+    try {
+      await deleteRestaurant(id);
+      setRestaurants(prev => prev.filter(r => r.id !== id));
+    }
+    catch (error) {
+      console.error('Error deleting restaurant:', error);
+    }
+  };
+
   const filtered = restaurants.filter(r =>
-    r.name.toLowerCase().includes(search.toLowerCase()) ||
-    r.address.toLowerCase().includes(search.toLowerCase())
-  );
+    r.name.toLowerCase().includes(search.toLowerCase())  );
 
-  const openAdd = () => { setEditTarget(null); setForm(EMPTY_FORM); setPanelOpen(true); };
-  const openEdit = (r) => { setEditTarget(r); setForm({ name: r.name, description: r.description, address: r.address, is_featured: r.is_featured, is_active: r.is_active }); setPanelOpen(true); };
+  const openAdd = () => {
+    setEditTarget(null);
+    setForm(EMPTY_FORM);
+    setImagePreview(null);       // clear any leftover preview from a previous Edit
+    setPanelOpen(true);
+    
 
-  const handleSubmit = (e) => {
+  };
+
+  const openEdit = async (r) => {
+    setEditTarget(r);
+    setPanelOpen(true);          // open immediately, form fills in once the fetch resolves
+    const restaurant = await fetchRestaurantDetails(r.id);   // <-- was missing await
+    if (!restaurant) return;      // fetch failed — bail out, error already logged
+    setForm({
+      name: restaurant.name,
+      description: restaurant.description,
+      address: restaurant.address,
+      is_featured: restaurant.is_featured,
+      is_active: restaurant.is_active,
+    });
+    setImagePreview(restaurant.image ?? null);   // show the EXISTING image
+  };
+
+  // File inputs can't be pre-filled, and they don't hand you a value string —
+  // they hand you a FileList. Grab the first picked file, store it (for later
+  // upload) and build a local preview URL from it.
+  const handleImageChange = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setForm(p => ({ ...p, image: file }));
+    setImagePreview(URL.createObjectURL(file));
+  };
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (editTarget) {
-      setRestaurants(prev => prev.map(r => r.id === editTarget.id ? { ...r, ...form } : r));
+      await handleupdateRestaurant(editTarget.id, form);
     } else {
-      const newId = Math.max(...restaurants.map(r => r.id)) + 1;
-      setRestaurants(prev => [...prev, { id: newId, ...form, image: null, created_at: new Date().toISOString() }]);
+      await addRestaurant(form);
     }
     setPanelOpen(false);
   };
 
-  const handleDelete = () => {
-    setRestaurants(prev => prev.filter(r => r.id !== deleteTarget.id));
+  const handleDelete = async () => {
+    if (!deleteTarget) return;
+    await handledeleteRestaurant(deleteTarget.id);
+    setDeleteTarget(null);
+    setPanelOpen(false);
   };
 
   return (
@@ -125,21 +239,17 @@ export default function Restaurants() {
           <div key={r.id} className="bg-white dark:bg-white/5 border border-black/5 dark:border-white/5 rounded-2xl overflow-hidden hover:shadow-md hover:-translate-y-0.5 transition-all duration-200">
             {/* Image placeholder */}
             <div className="h-[100px] bg-gradient-to-br from-[#fc8a06]/10 to-[#03081F]/5 flex items-center justify-center">
-              <Store size={32} className="text-[#fc8a06]/40" />
+              {r.image ? (
+                <img src={r.image} alt={r.name} className="w-full h-full object-cover" />
+              ) : (
+                <Store size={32} className="text-[#fc8a06]/40" />
+              )}
             </div>
             <div className="p-4">
               <div className="flex items-start justify-between gap-2 mb-2">
                 <h3 className="font-bold text-[15px] text-[#03081F] dark:text-white">{r.name}</h3>
-                <div className="flex gap-1 shrink-0">
-                  {r.is_featured && <span className="p-1 bg-yellow-50 dark:bg-yellow-400/10 rounded-lg"><Star size={12} className="text-yellow-500" /></span>}
-                  {r.is_active
-                    ? <span className="p-1 bg-green-50 dark:bg-green-400/10 rounded-lg"><CheckCircle size={12} className="text-green-500" /></span>
-                    : <span className="p-1 bg-red-50 dark:bg-red-400/10 rounded-lg"><XCircle size={12} className="text-red-400" /></span>
-                  }
-                </div>
+                
               </div>
-              <p className="text-[12px] text-black/50 dark:text-white/50 mb-1 line-clamp-2">{r.description}</p>
-              <p className="text-[11px] text-black/30 dark:text-white/30 mb-4">{r.address}</p>
               <div className="flex gap-2">
                 <button
                   onClick={() => openEdit(r)}
@@ -165,7 +275,14 @@ export default function Restaurants() {
         onClose={() => setPanelOpen(false)}
         title={editTarget ? `Edit: ${editTarget.name}` : 'Add New Restaurant'}
       >
-        <RestaurantForm form={form} setForm={setForm} onSubmit={handleSubmit} submitLabel={editTarget ? 'Save Changes' : 'Create Restaurant'} />
+        <RestaurantForm
+          form={form}
+          setForm={setForm}
+          imagePreview={imagePreview}
+          onImageChange={handleImageChange}
+          onSubmit={handleSubmit}
+          submitLabel={editTarget ? 'Save Changes' : 'Create Restaurant'}
+        />
       </SlideOverPanel>
 
       {/* Delete confirm */}

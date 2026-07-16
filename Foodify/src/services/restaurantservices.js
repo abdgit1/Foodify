@@ -37,3 +37,67 @@ export async function getRestaurantById(id) {
     })),
   };
 }
+
+/**
+ * POST /restaurants/create-restaurant/ — Admin only.
+ * payload: { name, description, address, is_featured, is_active }
+ */
+export async function createRestaurant(payload) {
+  const formData = new FormData();
+
+  formData.append('name', payload.name);
+  formData.append('description', payload.description);
+  formData.append('address', payload.address);
+  formData.append('is_featured', payload.is_featured);
+  formData.append('is_active', payload.is_active);
+
+  if (payload.image) {
+    formData.append('image', payload.image);
+  }
+
+  const restaurant = await apiClient.post(
+    '/restaurants/create-restaurant/',
+    formData
+  );
+
+  return {
+    ...restaurant,
+    image: resolveImageUrl(restaurant.image),
+  };
+}
+/**
+ * PATCH /restaurants/update-restaurant/<id>/ — Admin only. Partial payload.
+ * Same FormData approach as createRestaurant, for the same reason: PATCH
+ * with a plain JSON body can't carry a File.
+ */
+export async function updateRestaurant(id, payload) {
+  const formData = new FormData();
+ 
+  formData.append('name', payload.name);
+  formData.append('description', payload.description);
+  formData.append('address', payload.address);
+  formData.append('is_featured', payload.is_featured);
+  formData.append('is_active', payload.is_active);
+ 
+  // Only attach image if it's an actual new File. After openEdit(), form.image
+  // is undefined (it was never set from the fetched restaurant) unless the
+  // user actively picks a new file via handleImageChange.
+  if (payload.image instanceof File) {
+    formData.append('image', payload.image);
+  }
+ 
+  const restaurant = await apiClient.patch(
+    `/restaurants/update-restaurant/${id}/`,
+    formData
+  );
+ 
+  return { ...restaurant, image: resolveImageUrl(restaurant.image) };
+}
+ 
+
+/**
+ * DELETE /restaurants/delete-restaurant/<id>/ — Admin only.
+ */
+export async function deleteRestaurant(id) {
+  return apiClient.delete(`/restaurants/delete-restaurant/${id}/`);
+}
