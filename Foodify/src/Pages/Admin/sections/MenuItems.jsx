@@ -1,12 +1,17 @@
-import { useState } from 'react';
-import { Plus, Pencil, Trash2, Search, CheckCircle, XCircle, Star } from 'lucide-react';
+import { useState,useEffect } from 'react';
+import { Plus, Pencil, Trash2, Search } from 'lucide-react';
 import SlideOverPanel from '../../../Components/AdminComponents/SlideOverPanel';
 import ConfirmModal from '../../../Components/AdminComponents/ConfirmModal';
-import { mockMenuItems, mockRestaurants, mockCategories } from '../mockData';
+import { getAllMenuItems, createMenuItem, updateMenuItem, deleteMenuItem } from '../../../services/menuItemService';
+import {getAllRestaurants} from '../../../services/restaurantservices';
+import {getAllCategories,} from '../../../services/Categoryservice';
 
-const EMPTY_FORM = { name: '', description: '', price: '', restaurant_id: '', category_id: '', is_available: true, is_featured: false };
 
-function MenuItemForm({ form, setForm, onSubmit, submitLabel }) {
+
+const EMPTY_FORM = { name: '', description: '', price: '', restaurant_id: '', category_id: '', is_available: true, is_featured: false, image: null };
+
+
+function MenuItemForm({ form, setForm, onSubmit, submitLabel ,restaurants , categories}) {
   return (
     <form onSubmit={onSubmit} className="flex flex-col gap-5">
       <p className="text-[11px] text-black/40 dark:text-white/40 bg-black/3 dark:bg-white/5 rounded-lg px-3 py-2">
@@ -30,7 +35,7 @@ function MenuItemForm({ form, setForm, onSubmit, submitLabel }) {
           <select value={form.restaurant_id} onChange={e => setForm(p => ({ ...p, restaurant_id: e.target.value }))} required
             className="h-[46px] w-full rounded-xl border border-black/10 dark:border-white/10 bg-white dark:bg-white/5 px-4 text-[14px] text-black dark:text-white outline-none focus:border-[#fc8a06] transition-colors cursor-pointer">
             <option value="">Select...</option>
-            {mockRestaurants.map(r => <option key={r.id} value={r.id} className="bg-white dark:bg-[#0a0f2e]">{r.name}</option>)}
+            {restaurants.map(r => <option key={r.id} value={r.id} className="bg-white dark:bg-[#0a0f2e]">{r.name}</option>)}
           </select>
         </div>
       </div>
@@ -40,7 +45,7 @@ function MenuItemForm({ form, setForm, onSubmit, submitLabel }) {
         <select value={form.category_id} onChange={e => setForm(p => ({ ...p, category_id: e.target.value }))}
           className="h-[46px] w-full rounded-xl border border-black/10 dark:border-white/10 bg-white dark:bg-white/5 px-4 text-[14px] text-black dark:text-white outline-none focus:border-[#fc8a06] transition-colors cursor-pointer">
           <option value="">None</option>
-          {mockCategories.map(c => <option key={c.id} value={c.id} className="bg-white dark:bg-[#0a0f2e]">{c.name}</option>)}
+          {categories.map(c => <option key={c.id} value={c.id} className="bg-white dark:bg-[#0a0f2e]">{c.name}</option>)}
         </select>
       </div>
 
@@ -48,6 +53,15 @@ function MenuItemForm({ form, setForm, onSubmit, submitLabel }) {
         <label className="text-[13px] font-semibold text-[#03081F] dark:text-white">Description</label>
         <textarea value={form.description} onChange={e => setForm(p => ({ ...p, description: e.target.value }))} placeholder="Item description..." rows={3}
           className="w-full rounded-xl border border-black/10 dark:border-white/10 bg-white dark:bg-white/5 px-4 py-3 text-[14px] text-black dark:text-white placeholder-black/30 dark:placeholder-white/30 outline-none focus:border-[#fc8a06] transition-colors resize-none" />
+      </div>
+
+      <div className="flex flex-col gap-1.5">
+        <label className="text-[13px] font-semibold text-[#03081F] dark:text-white">Image</label>
+        {form.image && typeof form.image === 'string' && (
+          <img src={form.image} alt="Current" className="w-20 h-20 rounded-lg object-cover mb-1" />
+        )}
+        <input type="file" accept="image/*" onChange={e => setForm(p => ({ ...p, image: e.target.files?.[0] || p.image }))}
+          className="text-[13px] text-black/60 dark:text-white/60 file:mr-3 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-[13px] file:font-semibold file:bg-[#fc8a06]/10 file:text-[#fc8a06] hover:file:bg-[#fc8a06]/20 cursor-pointer" />
       </div>
 
       <div className="flex gap-4">
@@ -66,14 +80,96 @@ function MenuItemForm({ form, setForm, onSubmit, submitLabel }) {
   );
 }
 
+
+
+
+  
+
 export default function MenuItems() {
-  const [items, setItems] = useState(mockMenuItems);
+  const [items, setItems] = useState([]);
   const [search, setSearch] = useState('');
   const [panelOpen, setPanelOpen] = useState(false);
   const [editTarget, setEditTarget] = useState(null);
   const [form, setForm] = useState(EMPTY_FORM);
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [filterRestaurant, setFilterRestaurant] = useState('all');
+  const [restaurants, setRestaurants] = useState([]);
+  const [categories, setCategories] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [deleting, setDeleting] = useState(false);
+
+
+
+
+
+const fetchMenuItems = async () => {
+  setLoading(true);
+  setError(null);
+  try {
+    const data = await getAllMenuItems();
+    setItems(data);
+  } catch (err) {
+    console.error('Error fetching menu items:', err);
+    setError('Failed to load menu items. Please try again.');
+  } finally {
+    setLoading(false);
+  }
+};
+
+useEffect(() => {
+  fetchMenuItems();
+}, []);
+
+const fetchRestaurants = async () => {
+    try {
+      const data = await getAllRestaurants();
+      setRestaurants(data);
+    } catch (error) {
+      console.error('Error fetching restaurants:', error);
+    }
+  };
+
+  useEffect(() => {
+    fetchRestaurants();
+  }, []);
+
+  const fetchCategories = async () => {
+    try {
+      const data = await getAllCategories();
+      setCategories(data);
+    } catch (error) {
+      console.error('Error fetching categories:', error);
+    }
+  };
+
+  useEffect(() => {
+    fetchCategories();
+  }, []);
+
+  const handleAddMenuItem = async (payload) => {
+    try {
+      const newItem = await createMenuItem(payload);
+      setItems(prev => [...prev, newItem]);
+    }
+    catch (error) {
+      console.error('Error creating menu item:', error);
+    }
+  };
+
+
+  const handleUpdateMenuItem = async (id, payload) => {
+    try {
+      const updatedItem = await updateMenuItem(id, payload);
+      setItems(prev => prev.map(it => it.id === id ? updatedItem : it));
+    }
+    catch (error) {
+      console.error('Error updating menu item:', error);
+    }
+  };
+
+  
+
 
   const filtered = items.filter(item => {
     const matchSearch = item.name.toLowerCase().includes(search.toLowerCase()) ||
@@ -85,24 +181,34 @@ export default function MenuItems() {
   const openAdd = () => { setEditTarget(null); setForm(EMPTY_FORM); setPanelOpen(true); };
   const openEdit = (item) => {
     setEditTarget(item);
-    setForm({ name: item.name, description: item.description, price: item.price, restaurant_id: String(item.restaurant.id), category_id: String(item.category?.id || ''), is_available: item.is_available, is_featured: item.is_featured });
+    setForm({ name: item.name, description: item.description, price: item.price, restaurant_id: String(item.restaurant.id), category_id: String(item.category?.id || ''), is_available: item.is_available, is_featured: item.is_featured, image: item.image || null });
     setPanelOpen(true);
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
     if (editTarget) {
-      setItems(prev => prev.map(it => it.id === editTarget.id ? { ...it, ...form, price: String(parseFloat(form.price).toFixed(2)) } : it));
+      handleUpdateMenuItem(editTarget.id, form);
     } else {
-      const newId = Math.max(...items.map(it => it.id)) + 1;
-      const rest = mockRestaurants.find(r => String(r.id) === form.restaurant_id);
-      const cat = mockCategories.find(c => String(c.id) === form.category_id);
-      setItems(prev => [...prev, { id: newId, ...form, price: String(parseFloat(form.price).toFixed(2)), restaurant: rest || { id: 0, name: '' }, category: cat || null, image: null, created_at: new Date().toISOString() }]);
+      handleAddMenuItem(form);
     }
     setPanelOpen(false);
   };
 
-  const handleDelete = () => setItems(prev => prev.filter(it => it.id !== deleteTarget.id));
+  const handleDelete = async () => {
+    if (!deleteTarget) return;
+    setDeleting(true);
+    try {
+      await deleteMenuItem(deleteTarget.id);
+      setItems(prev => prev.filter(it => it.id !== deleteTarget.id));
+      setDeleteTarget(null);
+    } catch (err) {
+      console.error('Error deleting menu item:', err);
+      setError('Failed to delete menu item. Please try again.');
+    } finally {
+      setDeleting(false);
+    }
+  };
 
   return (
     <div className="p-6 space-y-5">
@@ -116,7 +222,7 @@ export default function MenuItems() {
         <select value={filterRestaurant} onChange={e => setFilterRestaurant(e.target.value)}
           className="h-[44px] px-4 bg-white dark:bg-white/5 border border-black/5 dark:border-white/10 rounded-xl text-[13px] text-black dark:text-white outline-none cursor-pointer">
           <option value="all" className="bg-white dark:bg-[#0a0f2e]">All Restaurants</option>
-          {mockRestaurants.map(r => <option key={r.id} value={String(r.id)} className="bg-white dark:bg-[#0a0f2e]">{r.name}</option>)}
+          {restaurants.map(r => <option key={r.id} value={String(r.id)} className="bg-white dark:bg-[#0a0f2e]">{r.name}</option>)}
         </select>
         <button onClick={openAdd} className="flex items-center gap-2 px-5 h-[44px] bg-[#fc8a06] text-white rounded-xl font-semibold text-[13px] hover:bg-[#e07a00] transition-colors cursor-pointer shrink-0">
           <Plus size={16} /> Add Item
@@ -128,6 +234,13 @@ export default function MenuItems() {
         <span className="font-semibold">API:</span> <code>GET /restaurants/all-menuitem</code> · <code>POST /restaurants/create-menuitem/</code> · <code>PATCH /restaurants/update-menuitem/:id/</code> · <code>DELETE /restaurants/delete-menuitem/:id/</code>
       </div>
 
+      {error && (
+        <div className="bg-red-50 dark:bg-red-400/10 border border-red-200 dark:border-red-400/20 rounded-xl px-4 py-2.5 text-[13px] text-red-600 dark:text-red-400 flex items-center justify-between">
+          <span>{error}</span>
+          <button onClick={fetchMenuItems} className="font-semibold underline cursor-pointer">Retry</button>
+        </div>
+      )}
+
       {/* Table */}
       <div className="bg-white dark:bg-white/5 border border-black/5 dark:border-white/5 rounded-2xl overflow-hidden">
         <div className="px-5 py-4 border-b border-black/5 dark:border-white/5">
@@ -137,13 +250,19 @@ export default function MenuItems() {
           <table className="w-full text-[13px]">
             <thead>
               <tr className="border-b border-black/5 dark:border-white/5">
-                {['Name', 'Restaurant', 'Category', 'Price', 'Available', 'Featured', 'Actions'].map(h => (
+                {['Name', 'Restaurant', 'Category', 'Price', 'Actions'].map(h => (
                   <th key={h} className="text-left px-4 py-3 text-[11px] font-semibold text-black/40 dark:text-white/40 uppercase tracking-wider whitespace-nowrap">{h}</th>
                 ))}
               </tr>
             </thead>
             <tbody>
-              {filtered.map(item => (
+              {loading && (
+                <tr><td colSpan={5} className="px-4 py-8 text-center text-black/40 dark:text-white/40 text-[13px]">Loading menu items...</td></tr>
+              )}
+              {!loading && filtered.length === 0 && (
+                <tr><td colSpan={5} className="px-4 py-8 text-center text-black/40 dark:text-white/40 text-[13px]">No menu items found.</td></tr>
+              )}
+              {!loading && filtered.map(item => (
                 <tr key={item.id} className="border-b border-black/3 dark:border-white/3 hover:bg-[#fc8a06]/2 transition-colors">
                   <td className="px-4 py-3.5">
                     <p className="font-semibold text-[#03081F] dark:text-white">{item.name}</p>
@@ -156,14 +275,6 @@ export default function MenuItems() {
                     )}
                   </td>
                   <td className="px-4 py-3.5 font-bold text-[#03081F] dark:text-white whitespace-nowrap">£{item.price}</td>
-                  <td className="px-4 py-3.5">
-                    {item.is_available
-                      ? <CheckCircle size={16} className="text-green-500" />
-                      : <XCircle size={16} className="text-red-400" />}
-                  </td>
-                  <td className="px-4 py-3.5">
-                    {item.is_featured && <Star size={16} className="text-yellow-500 fill-yellow-500" />}
-                  </td>
                   <td className="px-4 py-3.5">
                     <div className="flex items-center gap-2">
                       <button onClick={() => openEdit(item)} className="p-1.5 rounded-lg bg-black/5 dark:bg-white/10 hover:bg-black/10 dark:hover:bg-white/20 transition-colors cursor-pointer">
@@ -182,11 +293,11 @@ export default function MenuItems() {
       </div>
 
       <SlideOverPanel open={panelOpen} onClose={() => setPanelOpen(false)} title={editTarget ? `Edit: ${editTarget.name}` : 'Add Menu Item'}>
-        <MenuItemForm form={form} setForm={setForm} onSubmit={handleSubmit} submitLabel={editTarget ? 'Save Changes' : 'Create Item'} />
+        <MenuItemForm form={form} setForm={setForm} onSubmit={handleSubmit} submitLabel={editTarget ? 'Save Changes' : 'Create Item'}  restaurants={restaurants} categories={categories} />
       </SlideOverPanel>
 
       <ConfirmModal open={!!deleteTarget} onClose={() => setDeleteTarget(null)} onConfirm={handleDelete}
-        title={`Delete "${deleteTarget?.name}"?`} message="This menu item will be permanently removed." confirmLabel="Delete Item" />
+        title={`Delete "${deleteTarget?.name}"?`} message="This menu item will be permanently removed." confirmLabel={deleting ? 'Deleting...' : 'Delete Item'} />
     </div>
   );
 }

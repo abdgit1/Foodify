@@ -93,6 +93,8 @@ export async function updateRestaurant(id, payload) {
  
   return { ...restaurant, image: resolveImageUrl(restaurant.image) };
 }
+
+
  
 
 /**
