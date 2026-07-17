@@ -11,6 +11,7 @@ const navItems = [
   { label: 'Menu Items',   path: '/admin-dashboard/menu-items',   icon: Layers           },
   { label: 'Categories',   path: '/admin-dashboard/categories',   icon: Tag              },
   { label: 'Deals',        path: '/admin-dashboard/deals',        icon: ShoppingBag      },
+  { label: 'Deal Items',   path: '/admin-dashboard/deal-items',   icon: Layers           },
 ];
 
 export default function AdminSidebar({ collapsed, setCollapsed }) {

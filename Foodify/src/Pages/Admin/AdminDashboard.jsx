@@ -9,6 +9,7 @@ import Restaurants from './sections/Restaurants';
 import MenuItems from './sections/MenuItems';
 import Categories from './sections/Categories';
 import Deals from './sections/Deals';
+import DealItems from './sections/DealItems';
 
 export default function AdminDashboard() {
   const [collapsed, setCollapsed] = useState(false);
@@ -30,6 +31,7 @@ export default function AdminDashboard() {
             <Route path="menu-items"   element={<MenuItems />} />
             <Route path="categories"   element={<Categories />} />
             <Route path="deals"        element={<Deals />} />
+            <Route path="deal-items"   element={<DealItems />} />
           </Routes>
         </main>
       </div>
