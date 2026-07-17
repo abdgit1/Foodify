@@ -5,6 +5,8 @@ import {
   CartesianGrid, Tooltip, ResponsiveContainer, Cell, Legend
 } from 'recharts';
 import { mockRevenueOverTime, mockPopularItems, mockPopularDeals, mockRevenueByRestaurant } from '../mockData';
+import {getRevenueByRestaurant,getRevenueOverTime,getPopularItems,getPopularDeals} from '../../../services/Analyticsservice';
+import { useEffect } from 'react';
 
 // ─── Brand palette ────────────────────────────────────────────────────────────
 const BRAND_ORANGE = '#fc8a06';
@@ -39,15 +41,78 @@ const ApiHint = ({ endpoint }) => (
 
 export default function Analytics() {
   const [revenueRange, setRevenueRange] = useState('daily');
+  const [revenueByRestaurant, setRevenueByRestaurant] = useState([]);
+  const [popularItems, setPopularItems] = useState([]);
+
+
+  const [popularDeals, setPopularDeals] = useState([]);
+
+  const handleGetPopularDeals = async () => {
+    try {
+      const response = await getPopularDeals();
+      setPopularDeals(response);
+    }
+    catch (error) {
+      console.error('Error fetching popular deals:', error);
+    }
+  };
+  useEffect(() => {
+    handleGetPopularDeals();
+  }, []);
+  console.log('Popular deals data:', popularDeals); // Log the popular deals data to the console for debugging
+
+  const handleGetPopularItems = async () => {
+    try {
+      const response = await getPopularItems();
+      setPopularItems(response);
+    }
+    catch (error) {
+      console.error('Error fetching popular items:', error);
+    }
+  };
+  useEffect(() => {
+    handleGetPopularItems();
+  }, []);
+  console.log('Popular items data:', popularItems); // Log the popular items data to the console for debugging
+
+  const handleGetRevenueByRestaurant = async () => {
+    try {
+      const response = await getRevenueByRestaurant();
+      setRevenueByRestaurant(response);
+    }
+    catch (error) {
+      console.error('Error fetching revenue by restaurant:', error);
+    }
+  };
+  useEffect(() => {
+    handleGetRevenueByRestaurant();
+  }, []);
+  console.log('Revenue by restaurant data:', revenueByRestaurant); // Log the revenue by restaurant data to the console for debugging
+
+  const [revenueOverTime, setRevenueOverTime] = useState([]);
+  const handleGetRevenueOverTime = async (range) => {
+    try {
+      const response = await getRevenueOverTime(range);
+      setRevenueOverTime(response);
+    }
+    catch (error) {
+      console.error('Error fetching revenue over time:', error);
+    }
+  };
+  useEffect(() => {
+    handleGetRevenueOverTime(revenueRange);
+  }, [revenueRange]);
+
+  console.log('Revenue over time data:', revenueOverTime); // Log the revenue over time data to the console for debugging
 
   // Shape data for recharts
-  const revenueData = mockRevenueOverTime.map(d => ({
+  const revenueData = revenueOverTime.map(d => ({
     date:    d.period.slice(5),
     Revenue: d.total_revenue,
     Orders:  d.total_orders,
   }));
 
-  const restaurantData = mockRevenueByRestaurant.map(r => ({
+  const restaurantData = revenueByRestaurant.map(r => ({
     name:    r.restaurant__name.split(' ')[0],   // short label
     fullName: r.restaurant__name,
     Revenue: r.total_revenue,
@@ -159,7 +224,7 @@ export default function Analytics() {
               </tr>
             </thead>
             <tbody>
-              {mockRevenueByRestaurant.map((r, i) => (
+              {revenueByRestaurant.map((r, i) => (
                 <tr key={r.restaurant__id} className="border-b border-black/3 dark:border-white/3 hover:bg-black/2 dark:hover:bg-white/2 transition-colors">
                   <td className="py-3 pr-4 font-medium text-[#03081F] dark:text-white flex items-center gap-2">
                     <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ background: BAR_COLORS[i % BAR_COLORS.length] }} />
@@ -192,9 +257,9 @@ export default function Analytics() {
           {/* ✅ recharts horizontal bar */}
           <ResponsiveContainer width="100%" height={180}>
             <BarChart
-              data={mockPopularItems.map(it => ({ name: it.menu_item__name.split(' ').slice(0, 2).join(' '), sold: it.total_sold, revenue: it.total_revenue }))}
+              data={popularItems.map(it => ({ name: it.menu_item__name.split(' ').slice(0, 2).join(' '), sold: it.total_sold, revenue: it.total_revenue }))}
               layout="vertical"
-              margin={{ top: 0, right: 40, left: 0, bottom: 0 }}
+              margin={{ top: 0, right: 40, left: 30, bottom: 0 }}
               barSize={14}
             >
               <XAxis type="number" tick={{ fontSize: 10, fill: '#888' }} axisLine={false} tickLine={false} />
@@ -206,7 +271,7 @@ export default function Analytics() {
 
           {/* Detailed list */}
           <div className="mt-3 space-y-2">
-            {mockPopularItems.map((item, i) => (
+            {popularItems.map((item, i) => (
               <div key={item.menu_item__id} className="flex items-center justify-between text-[12px]">
                 <div className="flex items-center gap-2 min-w-0">
                   <span className="w-5 h-5 rounded-full bg-[#fc8a06]/10 text-[#fc8a06] text-[10px] font-bold flex items-center justify-center shrink-0">{i + 1}</span>
@@ -230,20 +295,20 @@ export default function Analytics() {
           {/* ✅ recharts horizontal bar */}
           <ResponsiveContainer width="100%" height={130}>
             <BarChart
-              data={mockPopularDeals.map(d => ({ name: d.deal__name.split(' ').slice(0, 2).join(' '), sold: d.total_sold, revenue: d.total_revenue }))}
+              data={popularDeals.map(d => ({ name: d.deal__name.split(' ').slice(0, 2).join(' '), sold: d.total_sold, revenue: d.total_revenue }))}
               layout="vertical"
-              margin={{ top: 0, right: 40, left: 0, bottom: 0 }}
+              margin={{ top: 0, right: 40, left: 30, bottom: 0 }}
               barSize={14}
             >
               <XAxis type="number" tick={{ fontSize: 10, fill: '#888' }} axisLine={false} tickLine={false} />
-              <YAxis type="category" dataKey="name" tick={{ fontSize: 11, fill: '#888' }} axisLine={false} tickLine={false} width={80} />
+              <YAxis type="category" dataKey="name" tick={{ fontSize: 11, fill: '#888' }} axisLine={false} tickLine={false} width={90} />
               <Tooltip content={<DarkTooltip prefix="" />} />
               <Bar dataKey="sold" name="Units Sold" fill={PURPLE} radius={[0, 6, 6, 0]} />
             </BarChart>
           </ResponsiveContainer>
 
-          <div className="mt-3 space-y-2">
-            {mockPopularDeals.map((deal, i) => (
+          <div className="mt-3 space-y-2 ">
+            {popularDeals.map((deal, i) => (
               <div key={deal.deal__id} className="flex items-center justify-between text-[12px]">
                 <div className="flex items-center gap-2 min-w-0">
                   <span className="w-5 h-5 rounded-full bg-[#8b5cf6]/10 text-[#8b5cf6] text-[10px] font-bold flex items-center justify-center shrink-0">{i + 1}</span>

@@ -10,7 +10,9 @@ import { Menu, LogOut, ChevronDown, Store, Loader2 } from "lucide-react";
 import ThemeToggle from "./ThemeToggle";
 import { useAuthModal } from "../../context/AuthModalContext";
 import { logout } from "../../features/authSlice";
+import { setCartCount } from "../../features/cartSlice";
 import { getAllRestaurants } from "../../services/restaurantservices";
+import { getCart } from "../../services/cartService";
 
 const navLinks = [
   { label: "Home", path: "/" },
@@ -33,6 +35,7 @@ const Navbar = () => {
   const navigate = useNavigate();
 
   const { user, isAuthenticated } = useSelector((state) => state.auth);
+  const cartItemCount = useSelector((state) => state.cart.itemCount);
 
   // Fetch restaurants once on mount for the dropdown
   useEffect(() => {
@@ -44,6 +47,24 @@ const Navbar = () => {
       .finally(() => { if (!cancelled) setRestaurantsLoading(false); });
     return () => { cancelled = true; };
   }, []);
+
+  // Fetch cart item count whenever auth state changes
+  useEffect(() => {
+    if (!isAuthenticated) {
+      dispatch(setCartCount(0));
+      return;
+    }
+    let cancelled = false;
+    getCart()
+      .then((cart) => {
+        if (!cancelled) {
+          const count = cart.items.reduce((sum, item) => sum + item.quantity, 0);
+          dispatch(setCartCount(count));
+        }
+      })
+      .catch(() => {});
+    return () => { cancelled = true; };
+  }, [isAuthenticated, dispatch]);
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -98,8 +119,11 @@ const Navbar = () => {
                 </button>
               </div>
 
-              {/* Basket */}
-              <div className="flex items-center bg-brand-green border border-black/10 rounded-br-card text-white font-body h-full w-[378px]">
+              {/* Basket – links to /cart */}
+              <Link
+                to="/cart"
+                className="flex items-center bg-brand-green border border-black/10 rounded-br-card text-white font-body h-full w-[378px] hover:brightness-110 transition-all"
+              >
                 <div className="flex items-center justify-center px-2 flex-1">
                   <img
                     src={basketIcon}
@@ -111,7 +135,7 @@ const Navbar = () => {
                 <div className="h-full w-px bg-white/30" />
 
                 <div className="w-[112px] flex items-center justify-center font-semibold text-[16px]">
-                  23 Items
+                  {cartItemCount} {cartItemCount === 1 ? "Item" : "Items"}
                 </div>
 
                 <div className="h-full w-px bg-white/30" />
@@ -122,14 +146,14 @@ const Navbar = () => {
 
                 <div className="h-full w-px bg-white/30" />
 
-                <button className="flex-1 h-full flex items-center justify-center hover:bg-black/10 transition-colors cursor-pointer rounded-br-card">
+                <div className="flex-1 h-full flex items-center justify-center hover:bg-black/10 transition-colors cursor-pointer rounded-br-card">
                   <img
                     src={arrowDownIcon}
-                    alt="Go to checkout"
+                    alt="Go to cart"
                     className="w-[38px] h-[38px] object-contain rotate-90"
                   />
-                </button>
-              </div>
+                </div>
+              </Link>
             </div>
           </div>
         </div>

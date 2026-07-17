@@ -100,9 +100,7 @@ export async function createDeal(payload) {
 }
 
 /**
- * PATCH /restaurants/update-deal/<id>/ — Admin only. Partial payload.
- * Deliberately does NOT send restaurant_id — the docs' update example never
- * includes it, and there's nowhere for it to be echoed back on reads either.
+ * PATCH /restaurants/update-deal/<id>/ — Admin only..
  */
 export async function updateDeal(id, payload) {
   const formData = new FormData();

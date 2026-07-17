@@ -491,18 +491,18 @@ export default function TrackOrder() {
             </div>
 
             {/* Right Col: Layered Food Hero Images */}
-            <div className="lg:col-span-5 relative w-full h-[280px] sm:h-[320px] lg:h-[400px] flex items-center select-none overflow-visible">
+            <div className="lg:col-span-5 w-full flex items-center justify-center select-none overflow-hidden h-[260px] sm:h-[310px] lg:h-[380px]">
               {/* Bowl/Salad Image (TrackHero1) */}
               <img
                 src={trackHero1}
                 alt="Healthy Bowl Salad"
-                className="absolute left-[5%] sm:left-[15%] lg:left-auto lg:right-[180px] top-[50%] lg:top-[50%] -translate-y-1/2 w-[220px] sm:w-[300px] lg:w-[380px] h-[220px] sm:h-[300px] lg:h-[380px] object-contain z-10 transition-transform duration-300 hover:scale-105"
+                className="w-[160px] sm:w-[220px] lg:w-[280px] h-[160px] sm:h-[220px] lg:h-[280px] object-contain z-10 relative transition-transform duration-300 hover:scale-105 drop-shadow-xl -mr-6 lg:-mr-10"
               />
               {/* Pizza Image (TrackHero2) */}
               <img
                 src={trackHero2}
                 alt="Tasty Pizza"
-                className="absolute right-[5%] sm:right-[15%] lg:right-[-80px] top-[50%] lg:top-[52%] -translate-y-1/2 w-[200px] sm:w-[280px] lg:w-[340px] h-[200px] sm:h-[280px] lg:h-[340px] object-contain z-0 transition-transform duration-300 hover:scale-105"
+                className="w-[150px] sm:w-[200px] lg:w-[260px] h-[150px] sm:h-[200px] lg:h-[260px] object-contain z-0 relative transition-transform duration-300 hover:scale-105 drop-shadow-xl"
               />
             </div>
 

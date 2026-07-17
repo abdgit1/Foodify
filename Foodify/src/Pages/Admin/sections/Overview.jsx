@@ -6,6 +6,12 @@ import {
 import StatCard from '../../../Components/AdminComponents/StatCard';
 import StatusBadge from '../../../Components/AdminComponents/StatusBadge';
 import { mockOverview, mockRevenueOverTime, mockOrders, mockOrdersByStatus } from '../mockData';
+import { useEffect, useState } from 'react';
+import {getOverview} from '../../../services/Analyticsservice';
+import {getAllOrders} from '../../../services/Adminservice';
+import {getOrdersByStatus} from '../../../services/Analyticsservice';
+
+import { getRevenueOverTime } from '../../../services/Analyticsservice';
 
 // ─── Brand colors ────────────────────────────────────────────────────────────
 const BRAND_ORANGE = '#fc8a06';
@@ -20,6 +26,8 @@ const STATUS_COLORS = {
   delivered:        '#028643',
   cancelled:        '#ef4444',
 };
+
+
 
 // ─── Custom tooltip for area/bar charts ──────────────────────────────────────
 const CustomTooltip = ({ active, payload, label, prefix = '£' }) => {
@@ -49,28 +57,95 @@ const PieTooltip = ({ active, payload }) => {
 };
 
 export default function Overview() {
+  const [revenueOverTime, setRevenueOverTime] = useState([]);
+
+  const handleGetRevenueOverTime = async () => {
+  try {
+    const response = await getRevenueOverTime();
+    setRevenueOverTime(response);
+  }
+  catch (error) {
+    console.error('Error fetching revenue over time data:', error);
+  }
+} 
+
+useEffect(() => {
+  handleGetRevenueOverTime();
+}, []);
   // Shape data for recharts
-  const revenueData = mockRevenueOverTime.map(d => ({
+  const revenueData = revenueOverTime?.map(d => ({
     date: d.period.slice(5),        // "07-08"
     Revenue: d.total_revenue,
     Orders: d.total_orders,
   }));
 
-  const pieData = mockOrdersByStatus.map(d => ({
+
+  const [overviewData, setOverviewData] = useState(null);
+  const handleGetOverview = async () => {
+    try {
+      const response = await getOverview();
+      setOverviewData(response);
+    }
+    catch (error) {
+      console.error('Error fetching overview data:', error);
+    }
+  };
+
+  useEffect(() => {
+    handleGetOverview();
+  }, []);
+
+  console.log('Overview data:', overviewData); // Log the overview data to the console for debugging
+
+  const [recentOrders, setRecentOrders] = useState([]);
+  const handleGetRecentOrders = async () => {
+    try {
+      const response = await getAllOrders();
+      setRecentOrders(response);
+    }
+    catch (error) {
+      console.error('Error fetching recent orders:', error);
+    }
+  };
+
+  useEffect(() => {
+    handleGetRecentOrders();
+  }, []);
+
+  console.log('Recent orders data:', recentOrders); // Log the recent orders data to the console for debugging
+
+  const [ordersByStatus, setOrdersByStatus] = useState([]);
+  const handleGetOrdersByStatus = async () => {
+    try {
+      const response = await getOrdersByStatus();
+      setOrdersByStatus(response);
+    }
+    catch (error) {
+      console.error('Error fetching orders by status:', error);
+    }
+  };
+
+  useEffect(() => {
+    handleGetOrdersByStatus();
+  }, []);
+  console.log('Orders by status data:', ordersByStatus); // Log the orders by status data to the console for debugging
+
+  const pieData = ordersByStatus.map(d => ({
     name: d.current_status,
     value: d.count,
     fill: STATUS_COLORS[d.current_status] || '#ccc',
   }));
+
 
   return (
     <div className="p-6 space-y-6">
 
       {/* ── Stat cards ─────────────────────────────────────────────────────── */}
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
-        <StatCard title="Total Orders"        value={mockOverview.total_orders.toLocaleString()}       sub="All time"            icon={ShoppingBag} accent={BRAND_ORANGE} trend={8}  />
-        <StatCard title="Total Revenue"       value={`£${mockOverview.total_revenue.toLocaleString('en-GB', { minimumFractionDigits: 2 })}`} sub="All time" icon={DollarSign} accent={BRAND_GREEN}  trend={12} />
-        <StatCard title="Active Restaurants"  value={mockOverview.active_restaurants}                  sub="Currently open"      icon={Store}       accent="#3b82f6"     trend={2}  />
-        <StatCard title="Total Users"         value={mockOverview.total_users.toLocaleString()}        sub="Registered accounts" icon={Users}        accent="#8b5cf6"     trend={5}  />
+        <StatCard title="Total Orders"        value={overviewData?.total_orders}       sub="All time"            icon={ShoppingBag} accent={BRAND_ORANGE} trend={8}  />
+        <StatCard title="Total Revenue"       value={`£${overviewData?.total_revenue.toLocaleString('en-GB', { minimumFractionDigits: 2 })}`} sub="All time" icon={DollarSign} accent={BRAND_GREEN}  trend={12} />
+        <StatCard title="Active Restaurants"  value={overviewData?.active_restaurants}                  sub="Currently open"      icon={Store}       accent="#3b82f6"     trend={2}  />
+        <StatCard title="Total Users"         value={overviewData?.total_users.toLocaleString()}        sub="Registered accounts" icon={Users}        accent="#8b5cf6"     trend={5}  />
       </div>
 
       {/* ── Charts row ─────────────────────────────────────────────────────── */}
@@ -175,7 +250,7 @@ export default function Overview() {
               </tr>
             </thead>
             <tbody>
-              {mockOrders.slice(0, 5).map(order => (
+              {recentOrders.slice(0, 5).map(order => (
                 <tr key={order.order_id} className="border-b border-black/3 dark:border-white/3 hover:bg-[#fc8a06]/2 transition-colors">
                   <td className="px-5 py-3.5 font-semibold text-[#fc8a06]">#{order.order_id}</td>
                   <td className="px-5 py-3.5 text-[#03081F] dark:text-white">{order.user?.username}</td>

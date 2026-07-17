@@ -8,6 +8,8 @@ import {
   removeCartItem,
 } from "../../services/cartService";
 import { useAuthModal } from "../../context/AuthModalContext";
+import Navbar from "../../Components/CommonComponents/Navbar";
+import Footer from "../../Components/CommonComponents/Footer";
 
 // Maps the backend cart item shape to what <Checkout> expects.
 function toCheckoutItem(item) {
@@ -115,48 +117,66 @@ export default function Cart() {
 
   if (!isAuthenticated) {
     return (
-      <div className="w-full min-h-[70vh] flex flex-col items-center justify-center gap-4 bg-white dark:bg-brand-dark px-4">
-        <p className="text-black/60 dark:text-white/60 text-[15px] text-center">
-          Log in to see what's in your cart.
-        </p>
-        <button
-          onClick={openLogin}
-          className="h-[46px] px-8 rounded-full bg-[#fc8a06] text-white font-bold text-[14px] hover:bg-[#e07a00] transition-all"
-        >
-          Log In
-        </button>
+      <div className="flex flex-col min-h-screen bg-white dark:bg-brand-dark">
+        <Navbar />
+        <div className="flex-1 flex flex-col items-center justify-center gap-4 px-4">
+          <p className="text-black/60 dark:text-white/60 text-[15px] text-center">
+            Log in to see what's in your cart.
+          </p>
+          <button
+            onClick={openLogin}
+            className="h-[46px] px-8 rounded-full bg-[#fc8a06] text-white font-bold text-[14px] hover:bg-[#e07a00] transition-all"
+          >
+            Log In
+          </button>
+        </div>
+        <Footer />
       </div>
     );
   }
 
   if (loading) {
     return (
-      <div className="w-full min-h-[70vh] flex items-center justify-center bg-white dark:bg-brand-dark">
-        <p className="text-black/50 dark:text-white/50 text-[15px]">
-          Loading your cart…
-        </p>
+      <div className="flex flex-col min-h-screen bg-white dark:bg-brand-dark">
+        <Navbar />
+        <div className="flex-1 flex items-center justify-center">
+          <p className="text-black/50 dark:text-white/50 text-[15px]">
+            Loading your cart…
+          </p>
+        </div>
+        <Footer />
       </div>
     );
   }
 
   if (loadError) {
     return (
-      <div className="w-full min-h-[70vh] flex items-center justify-center bg-white dark:bg-brand-dark">
-        <p className="text-red-500 text-[15px]">
-          Couldn't load your cart right now. ({loadError})
-        </p>
+      <div className="flex flex-col min-h-screen bg-white dark:bg-brand-dark">
+        <Navbar />
+        <div className="flex-1 flex items-center justify-center">
+          <p className="text-red-500 text-[15px]">
+            Couldn't load your cart right now. ({loadError})
+          </p>
+        </div>
+        <Footer />
       </div>
     );
   }
 
   return (
-    <Checkout
-      cartItems={cartItems}
-      onIncrease={handleIncrease}
-      onDecrease={handleDecrease}
-      onRemove={handleRemove}
-      confirm={handleConfirm}
-      buttonText="Proceed to Checkout"
-    />
+    <div className="flex flex-col min-h-screen bg-white dark:bg-brand-dark">
+      <Navbar />
+      <div className="flex-1">
+        <Checkout
+          cartItems={cartItems}
+          onIncrease={handleIncrease}
+          onDecrease={handleDecrease}
+          onRemove={handleRemove}
+          confirm={handleConfirm}
+          buttonText="Proceed to Checkout"
+        />
+      </div>
+      <Footer />
+    </div>
   );
 }
