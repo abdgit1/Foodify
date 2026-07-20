@@ -73,7 +73,7 @@ const DealDetail = () => {
           <p className="text-[#fc8a06] font-semibold">{deal.restaurantLabel}</p>
           <h1 className="text-2xl md:text-3xl font-bold text-black mt-1">{deal.name}</h1>
           <p className="text-black/60 mt-2">{deal.description}</p>
-          <p className="text-[#fc8a06] font-bold text-xl mt-3">Rs. {deal.comboPrice}</p>
+          <p className="text-[#fc8a06] font-bold text-xl mt-3">${Number(deal.comboPrice).toLocaleString('en-US', { minimumFractionDigits: 2 })}</p>
         </div>
 
         {/* Included items */}

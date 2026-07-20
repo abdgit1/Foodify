@@ -28,12 +28,20 @@ const Login = ({ embedded = false }) => {
     // dispatch(...) sends the thunk off; .unwrap() lets us await the real
     // result here and catch a clean rejection, instead of just firing and forgetting.
     try {
-      await dispatch(loginUser(formData)).unwrap();
+      const result = await dispatch(loginUser(formData)).unwrap();
+      const user = result?.data;
 
-      if (embedded) {
-        close(); // was opened via the popup — just close it
+      if (user?.is_admin) {
+        if (embedded) {
+          close();
+        }
+        navigate('/admin-dashboard');
       } else {
-        navigate('/'); // was a full page visit — send them home
+        if (embedded) {
+          close(); // was opened via the popup — just close it
+        } else {
+          navigate('/'); // was a full page visit — send them home
+        }
       }
     } catch {
       // error is already saved in Redux state via the rejected case,

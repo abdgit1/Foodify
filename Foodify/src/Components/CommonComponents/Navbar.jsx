@@ -16,8 +16,8 @@ import { getCart } from "../../services/cartService";
 
 const navLinks = [
   { label: "Home", path: "/" },
-  { label: "Browse Menu", path: "/#menu" },
-  { label: "Special Offers", path: "/offers" },
+  { label: "Browse Menu", path: "/#categories" },
+  { label: "Special Offers", path: "/#exclusive-deals" },
   { label: "Restaurants", path: "/restaurants", hasDropdown: true },
   { label: "Track Order", path: "/orders/track" },
 ];
@@ -141,7 +141,7 @@ const Navbar = () => {
                 <div className="h-full w-px bg-white/30" />
 
                 <div className="flex items-center justify-center w-[116px] font-semibold text-[16px]">
-                  GBP 79.89
+                  $79.89
                 </div>
 
                 <div className="h-full w-px bg-white/30" />
@@ -174,12 +174,12 @@ const Navbar = () => {
 
             <nav className="flex items-center gap-8 font-nav text-sm font-semibold">
               {navLinks.map((link) => {
-                if (link.label === "Browse Menu") {
+                if (link.path.startsWith("/#")) {
                   return (
                     <HashLink
                       key={link.label}
                       smooth
-                      to="/#menu"
+                      to={link.path}
                       className="w-[127px] h-[45px] text-brand-dark hover:text-brand-orange flex items-center justify-center transition-colors duration-200"
                     >
                       {link.label}
@@ -366,7 +366,7 @@ const Navbar = () => {
           {/* Green segment */}
           <div className="flex items-center bg-brand-green h-full w-[220px] justify-center gap-2 shrink-0">
             <img src={basketIcon} alt="Basket" className="w-[38px] h-[38px] object-contain" />
-            <span className="text-white font-semibold text-[16px]">GBP 79.89</span>
+            <span className="text-white font-semibold text-[16px]">$79.89</span>
           </div>
         </div>
 
@@ -380,12 +380,12 @@ const Navbar = () => {
         {menuOpen && (
           <div className="w-full px-4 py-4 flex flex-col gap-4 bg-white dark:bg-[#0a0f2e] border-b border-black/10 dark:border-white/10">
             {navLinks.map((link) => {
-              if (link.label === "Browse Menu") {
+              if (link.path.startsWith("/#")) {
                 return (
                   <HashLink
                     key={link.label}
                     smooth
-                    to="/#menu"
+                    to={link.path}
                     onClick={() => setMenuOpen(false)}
                     className="text-brand-dark dark:text-white font-medium"
                   >

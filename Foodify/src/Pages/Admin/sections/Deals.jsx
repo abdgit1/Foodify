@@ -331,7 +331,7 @@ const restaurantNameOf = (deal) =>
                     <td className="px-4 py-3.5 text-black/60 dark:text-white/60 whitespace-nowrap">
                       {restaurantNameOf(deal) || '—'}
                     </td>
-                    <td className="px-4 py-3.5 font-bold text-[#03081F] dark:text-white whitespace-nowrap">£{deal.combo_price}</td>
+                    <td className="px-4 py-3.5 font-bold text-[#03081F] dark:text-white whitespace-nowrap">${Number(deal.combo_price).toLocaleString('en-US', { minimumFractionDigits: 2 })}</td>
                     <td className="px-4 py-3.5">
                       {itemCount > 0 ? (
                         <span className="px-2 py-0.5 bg-[#fc8a06]/10 text-[#fc8a06] text-[11px] rounded-full font-medium">

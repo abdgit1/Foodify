@@ -98,7 +98,7 @@ export default function RestaurantHero({ restaurant }) {
                     alt="Minimum Order"
                     className="w-5 h-5 sm:w-6 sm:h-6 object-contain"
                   />
-                  <span className="whitespace-nowrap font-medium">Minimum Order: 12 GBP</span>
+                  <span className="whitespace-nowrap font-medium">Minimum Order: $12.00</span>
                 </div>
 
                 <div className="flex items-center justify-center lg:justify-start gap-3 bg-[#03081F] text-white px-5 py-4 lg:py-3 rounded-full text-sm sm:text-base md:text-lg w-full lg:w-auto shadow-md">

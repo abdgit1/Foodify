@@ -16,12 +16,14 @@ const Home = () => {
     <div>
       <Navbar />
       <HeroBanner />
-      <div id="menu">
+      <div id="exclusive-deals">
         <ExclusiveDeals />
+      </div>
+      <div id="categories">
         <PopularCategories />
-        <div id="popular-restaurants">
-          <PopularRestaurants title="Popular Restaurants" />
-        </div>
+      </div>
+      <div id="popular-restaurants">
+        <PopularRestaurants title="Popular Restaurants" />
       </div>
       <div className="mx-auto max-w-6xl space-y-6 p-6">
 

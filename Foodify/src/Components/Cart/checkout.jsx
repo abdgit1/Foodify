@@ -109,7 +109,7 @@ export default function Checkout({ confirm, cartItems, onIncrease, onDecrease, o
                   </div>
 
                   <span className="font-bold text-[15px] text-[#03081F] dark:text-white whitespace-nowrap">
-                    Rs. {(Number(item.price) * item.quantity).toFixed(2)}
+                    ${(Number(item.price) * item.quantity).toLocaleString('en-US', { minimumFractionDigits: 2 })}
                   </span>
 
                   <button
@@ -133,14 +133,14 @@ export default function Checkout({ confirm, cartItems, onIncrease, onDecrease, o
             <div className="flex flex-col gap-3 text-[14px]">
               <div className="flex justify-between text-black/60 dark:text-white/60">
                 <span>Subtotal</span>
-                <span>Rs. {subTotal.toFixed(2)}</span>
+                <span>${subTotal.toLocaleString('en-US', { minimumFractionDigits: 2 })}</span>
               </div>
 
               <div className="h-px bg-black/10 dark:bg-white/10 my-2" />
 
               <div className="flex justify-between text-[18px] font-extrabold text-[#03081F] dark:text-white">
                 <span>Total</span>
-                <span>Rs. {total.toFixed(2)}</span>
+                <span>${total.toLocaleString('en-US', { minimumFractionDigits: 2 })}</span>
               </div>
             </div>
 

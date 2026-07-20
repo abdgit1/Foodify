@@ -173,11 +173,11 @@ export default function Orders() {
                         <span key={i} className="block text-[12px]">{it.name} ×{it.quantity}</span>
                       ))}
                     </td>
-                    <td className="px-4 py-3.5 font-semibold text-[#03081F] dark:text-white whitespace-nowrap">£{order.total_price}</td>
+                    <td className="px-4 py-3.5 font-semibold text-[#03081F] dark:text-white whitespace-nowrap">${Number(order.total_price).toLocaleString('en-US', { minimumFractionDigits: 2 })}</td>
                     <td className="px-4 py-3.5 whitespace-nowrap"><StatusBadge status={order.current_status} /></td>
                     <td className="px-4 py-3.5 text-[12px] text-black/50 dark:text-white/50 max-w-[140px] truncate">{order.delivery_address}</td>
                     <td className="px-4 py-3.5 text-[12px] text-black/40 dark:text-white/40 whitespace-nowrap">
-                      {new Date(order.created_at).toLocaleDateString('en-GB', { day: '2-digit', month: 'short' })}
+                      {new Date(order.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
                     </td>
                     <td className="px-4 py-3.5 whitespace-nowrap">
                       {nextStatus ? (

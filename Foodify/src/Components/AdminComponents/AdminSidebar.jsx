@@ -24,9 +24,7 @@ export default function AdminSidebar({ collapsed, setCollapsed }) {
         {/* Logo */}
         <div className={`flex items-center gap-3 px-4 py-5 border-b border-white/5 ${collapsed ? 'justify-center' : ''}`}>
           {!collapsed && (
-            <div className="flex-1 dark:bg-white dark:rounded-lg dark:px-2 dark:py-1">
-              <img src={logo} alt="Foodify" className="w-[120px] h-auto object-contain" />
-            </div>
+            <img src={logo} alt="Foodify" className="w-[120px] h-auto object-contain" />
           )}
           {collapsed && (
             <div className="w-8 h-8 bg-[#fc8a06] rounded-lg flex items-center justify-center font-bold text-white text-sm">F</div>

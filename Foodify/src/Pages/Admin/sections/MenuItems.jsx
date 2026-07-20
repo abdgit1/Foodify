@@ -26,7 +26,7 @@ function MenuItemForm({ form, setForm, onSubmit, submitLabel ,restaurants , cate
 
       <div className="flex gap-3">
         <div className="flex-1 flex flex-col gap-1.5">
-          <label className="text-[13px] font-semibold text-[#03081F] dark:text-white">Price (£)</label>
+          <label className="text-[13px] font-semibold text-[#03081F] dark:text-white">Price ($)</label>
           <input type="number" step="0.01" value={form.price} onChange={e => setForm(p => ({ ...p, price: e.target.value }))} placeholder="0.00" required
             className="h-[46px] w-full rounded-xl border border-black/10 dark:border-white/10 bg-white dark:bg-white/5 px-4 text-[14px] text-black dark:text-white placeholder-black/30 dark:placeholder-white/30 outline-none focus:border-[#fc8a06] transition-colors" />
         </div>
@@ -274,7 +274,7 @@ const fetchRestaurants = async () => {
                       <span className="px-2 py-0.5 bg-[#fc8a06]/10 text-[#fc8a06] text-[11px] rounded-full font-medium">{item.category.name}</span>
                     )}
                   </td>
-                  <td className="px-4 py-3.5 font-bold text-[#03081F] dark:text-white whitespace-nowrap">£{item.price}</td>
+                  <td className="px-4 py-3.5 font-bold text-[#03081F] dark:text-white whitespace-nowrap">${Number(item.price).toLocaleString('en-US', { minimumFractionDigits: 2 })}</td>
                   <td className="px-4 py-3.5">
                     <div className="flex items-center gap-2">
                       <button onClick={() => openEdit(item)} className="p-1.5 rounded-lg bg-black/5 dark:bg-white/10 hover:bg-black/10 dark:hover:bg-white/20 transition-colors cursor-pointer">

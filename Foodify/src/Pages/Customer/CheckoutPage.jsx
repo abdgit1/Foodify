@@ -283,7 +283,7 @@ export default function CheckoutPage() {
                 {cartItems.map((item) => (
                   <div key={item.id} className="flex justify-between text-black/60 dark:text-white/60">
                     <span className="truncate pr-2">{item.quantity}× {item.name}</span>
-                    <span className="whitespace-nowrap">Rs. {Number(item.subtotal ?? item.price * item.quantity).toFixed(2)}</span>
+                    <span className="whitespace-nowrap">${Number(item.subtotal ?? item.price * item.quantity).toLocaleString('en-US', { minimumFractionDigits: 2 })}</span>
                   </div>
                 ))}
 
@@ -291,14 +291,14 @@ export default function CheckoutPage() {
 
                 <div className="flex justify-between text-black/60 dark:text-white/60">
                   <span>Items Subtotal</span>
-                  <span>Rs. {Number(subTotal).toFixed(2)}</span>
+                  <span>${Number(subTotal).toLocaleString('en-US', { minimumFractionDigits: 2 })}</span>
                 </div>
 
                 <div className="h-px bg-black/10 dark:bg-white/10 my-2" />
 
                 <div className="flex justify-between text-[18px] font-extrabold text-[#03081F] dark:text-white">
                   <span>Total Payment</span>
-                  <span>Rs. {Number(total).toFixed(2)}</span>
+                  <span>${Number(total).toLocaleString('en-US', { minimumFractionDigits: 2 })}</span>
                 </div>
               </div>
 

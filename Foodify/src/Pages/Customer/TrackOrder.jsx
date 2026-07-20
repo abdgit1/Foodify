@@ -791,7 +791,7 @@ export default function TrackOrder() {
 
                         {/* Total Price for item */}
                         <span className="text-[15px] font-bold text-brand-dark dark:text-brand-white whitespace-nowrap">
-                          Rs. {Number(item.subtotal || 0).toLocaleString()}
+                          ${Number(item.subtotal || 0).toLocaleString('en-US', { minimumFractionDigits: 2 })}
                         </span>
                       </div>
                     ))}
@@ -802,12 +802,12 @@ export default function TrackOrder() {
                 <div className="border-t border-black/5 dark:border-white/5 pt-6 max-w-[400px] ml-auto w-full flex flex-col gap-3">
                   <div className="flex justify-between items-center text-[14px] font-semibold text-brand-dark/60 dark:text-brand-white/60">
                     <span>Subtotal</span>
-                    <span>Rs. {Number(itemsSubtotal).toLocaleString()}</span>
+                    <span>${Number(itemsSubtotal).toLocaleString('en-US', { minimumFractionDigits: 2 })}</span>
                   </div>
                   <div className="border-t border-dashed border-black/10 dark:border-white/10 pt-4 flex justify-between items-center">
                     <span className="text-[16px] font-bold text-brand-dark dark:text-brand-white">Total Paid</span>
                     <span className="text-[20px] md:text-[22px] font-extrabold text-brand-orange">
-                      Rs. {Number(activeOrder?.total_price || itemsSubtotal).toLocaleString()}
+                      ${Number(activeOrder?.total_price || itemsSubtotal).toLocaleString('en-US', { minimumFractionDigits: 2 })}
                     </span>
                   </div>
                 </div>

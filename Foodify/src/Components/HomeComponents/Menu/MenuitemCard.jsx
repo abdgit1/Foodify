@@ -52,7 +52,7 @@ function MenuItemCard({ id, image, name, price, restaurantName, onClick }) {
           <p className="text-black/50 text-sm truncate mt-0.5">{restaurantName}</p>
 
           <div className="flex items-center justify-between mt-2">
-            <p className="text-[#fc8a06] font-bold text-sm">Rs. {price}</p>
+            <p className="text-[#fc8a06] font-bold text-sm">${Number(price).toLocaleString('en-US', { minimumFractionDigits: 2 })}</p>
 
             <button
               type="button"

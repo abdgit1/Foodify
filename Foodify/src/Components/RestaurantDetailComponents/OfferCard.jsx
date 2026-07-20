@@ -23,7 +23,7 @@ function OfferCard({ image, restaurantLabel, title, price, onAdd, onSelect }) {
         <p className="text-white font-bold text-xl md:text-3xl">{title}</p>
         {price && (
           <p className="text-[#fc8a06] font-bold text-base md:text-lg mt-1">
-            {price.startsWith("GBP") ? price : `GBP ${price}`}
+            {price.startsWith("GBP") ? `$${price.replace(/^GBP\s*/, '')}` : `$${price}`}
           </p>
         )}
       </div>

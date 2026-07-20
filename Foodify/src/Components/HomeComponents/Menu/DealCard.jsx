@@ -15,7 +15,7 @@ function DealCard({ id, image, name, restaurantLabel, comboPrice, compact = fals
             </div>
           )}
           <div className="absolute top-0 left-0 bg-[#03081f] px-2 py-1 rounded-br-xl">
-            <span className="text-white font-bold text-xs">Rs. {comboPrice}</span>
+            <span className="text-white font-bold text-xs">${Number(comboPrice).toLocaleString('en-US', { minimumFractionDigits: 2 })}</span>
           </div>
         </div>
         <p className="text-black text-xs mt-2">{restaurantLabel}</p>
@@ -45,7 +45,7 @@ function DealCard({ id, image, name, restaurantLabel, comboPrice, compact = fals
         }}
       />
       <div className="absolute top-0 right-0 bg-[#03081f] px-4 h-[66px] rounded-bl-xl flex items-center justify-center">
-        <span className="text-white font-bold text-lg whitespace-nowrap">Rs. {comboPrice}</span>
+        <span className="text-white font-bold text-lg whitespace-nowrap">${Number(comboPrice).toLocaleString('en-US', { minimumFractionDigits: 2 })}</span>
       </div>
       <div className="absolute left-6 bottom-6">
         <p className="text-[#fc8a06] font-medium text-lg">{restaurantLabel}</p>
