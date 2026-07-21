@@ -62,7 +62,7 @@ const Navbar = () => {
           dispatch(setCartCount(count));
         }
       })
-      .catch(() => {});
+      .catch(() => { });
     return () => { cancelled = true; };
   }, [isAuthenticated, dispatch]);
 

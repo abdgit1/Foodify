@@ -12,33 +12,44 @@ import DealDetail from './Pages/Customer/DealDetail';
 import Cart from './Pages/Customer/Cart';
 import CheckoutPage from './Pages/Customer/CheckoutPage';
 import TrackOrder from './Pages/Customer/TrackOrder';
+import NotFoundPage from './Pages/Common/NotFoundPage';
+import ErrorPage from './Pages/Common/ErrorPage';
+import SimulateErrorPage from './Pages/Common/SimulateErrorPage';
+import ErrorBoundary from './Components/CommonComponents/ErrorBoundary';
 
 
 function App() {
   return (
     <Router>
-      <Routes>
-        {/* Customer-facing routes */}
-        <Route path="/" element={<HomePage />} />
-        <Route path="/restaurants/:id" element={<RestaurantDetail />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/signup" element={<Signup />} />
-        <Route path="/category/:id" element={<CategoryDetail />} />
-        <Route path="/orders/track" element={<TrackOrder />} />
-        {/* Admin dashboard — uses its own layout (no Navbar/Footer) */}
-        <Route path="/deals/:id" element={<DealDetail />} />
-        <Route path="/cart" element={<Cart />} />
-        <Route path="/checkout" element={<CheckoutPage />} />
-        <Route path="/admin-dashboard/*" element={
-          <AdminRoute>
-          <AdminDashboard />
-          </AdminRoute>
-          
-          } />
-      </Routes>
+      <ErrorBoundary>
+        <Routes>
+          {/* Customer-facing routes */}
+          <Route path="/" element={<HomePage />} />
+          <Route path="/restaurants/:id" element={<RestaurantDetail />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/signup" element={<Signup />} />
+          <Route path="/category/:id" element={<CategoryDetail />} />
+          <Route path="/orders/track" element={<TrackOrder />} />
+          <Route path="/deals/:id" element={<DealDetail />} />
+          <Route path="/cart" element={<Cart />} />
+          <Route path="/checkout" element={<CheckoutPage />} />
 
-      {/* Auth modal lives outside Routes so it overlays any page */}
-      <AuthModal />
+          {/* Admin dashboard — uses its own layout (no Navbar/Footer) */}
+          <Route path="/admin-dashboard/*" element={
+            <AdminRoute>
+              <AdminDashboard />
+            </AdminRoute>
+          } />
+
+          {/* Error and Not Found routes */}
+          <Route path="/simulate-error" element={<SimulateErrorPage />} />
+          <Route path="/error" element={<ErrorPage />} />
+          <Route path="*" element={<NotFoundPage />} />
+        </Routes>
+
+        {/* Auth modal lives outside Routes so it overlays any page */}
+        <AuthModal />
+      </ErrorBoundary>
     </Router>
   );
 }
