@@ -10,7 +10,7 @@ import {
   getRevenueOverTime,
   getPopularItems,
   getPopularDeals,
-} from '../../../services/Analyticsservice';
+} from '../../../services/analyticsService';
 
 // ─── Brand palette ────────────────────────────────────────────────────────────
 const BRAND_ORANGE = '#fc8a06';

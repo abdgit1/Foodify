@@ -4,7 +4,7 @@ import SlideOverPanel from '../../../Components/AdminComponents/SlideOverPanel';
 import ConfirmModal from '../../../Components/AdminComponents/ConfirmModal';
 import { getAllMenuItems, createMenuItem, updateMenuItem, deleteMenuItem } from '../../../services/menuItemService';
 import {getAllRestaurants} from '../../../services/restaurantservices';
-import {getAllCategories,} from '../../../services/Categoryservice';
+import {getAllCategories,} from '../../../services/categoryService';
 
 
 

@@ -6,10 +6,10 @@ import {
 import StatCard   from '../../../Components/AdminComponents/StatCard';
 import StatusBadge from '../../../Components/AdminComponents/StatusBadge';
 import { useEffect, useState } from 'react';
-import { getOverview }        from '../../../services/Analyticsservice';
-import { getAllOrders }        from '../../../services/Adminservice';
-import { getOrdersByStatus }  from '../../../services/Analyticsservice';
-import { getRevenueOverTime } from '../../../services/Analyticsservice';
+import { getOverview }        from '../../../services/analyticsService';
+import { getAllOrders }        from '../../../services/adminService';
+import { getOrdersByStatus }  from '../../../services/analyticsService';
+import { getRevenueOverTime } from '../../../services/analyticsService';
 
 // ─── Brand tokens ─────────────────────────────────────────────────────────────
 const BRAND_ORANGE = '#fc8a06';

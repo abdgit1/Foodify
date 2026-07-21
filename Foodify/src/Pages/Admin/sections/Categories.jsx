@@ -6,7 +6,7 @@ import {
   createCategory,
   updateCategory,
   deleteCategory,
-} from '../../../services/Categoryservice';
+} from '../../../services/categoryService';
 
 export default function Categories() {
   const [categories, setCategories] = useState([]);
