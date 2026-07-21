@@ -6,7 +6,7 @@ import backgroundImage from "../../assets/Group 23.png";
 import backgroundDarkImage from "../../assets/Group 23 Dark.png";
 
 import burgerImage from "../../assets/Rectangle 44.png";
-import reviewImage from "../../assets/Rectangle review.png";
+import reviewImage from "../../assets/Rectangle Review.png";
 import Motocross from "../../assets/Motocross.png";
 import OrderComplete from "../../assets/Order Completed.png";
 
